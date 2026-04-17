@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<!-- saved from url=(0231)file:///Users/gurkan/Library/Application%20Support/Claude/local-agent-mode-sessions/8beb3d8e-5cb6-4762-a5ad-a8a8a462bc2c/15dbc558-bb92-48ff-bcd0-05e958445049/local_2b3710af-89fe-4244-916a-95e21f65605f/outputs/akdoruk-dashboard.html -->
+<html lang="tr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akdoruk — Lojistik Kontrol Paneli</title>
+
+<!-- Fonts -->
+<link href="./1_files/css2" rel="stylesheet">
+
+<!-- Supabase JS v2 -->
+<script src="./1_files/supabase.min.js"></script>
+
+<style>
+/* ════════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════════ */
+:root {
+  --blue:    #0071BC;
+  --light:   #29ABE2;
+  --dark:    #03224C;
+  --navy:    #05396E;
+  --green:   #2ECC71;
+  --amber:   #F39C12;
+  --red:     #E74C3C;
+  --bg:      #EBF4FB;
+  --surface: #FFFFFF;
+  --border:  #BDD8EF;
+  --muted:   #6B8EAB;
+  --text:    #0D1E33;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'Barlow', sans-serif;
+  min-height: 100vh;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+.cond { font-family: 'Barlow Condensed', sans-serif; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #D6E9F5; }
+::-webkit-scrollbar-thumb { background: #A8CCE4; border-radius: 3px; }
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.hdr {
+  background: linear-gradient(135deg, #03224C 0%, #05396E 55%, #0071BC 100%);
+  border-bottom: 3px solid var(--light);
+  box-shadow: 0 4px 24px rgba(0,113,188,.35);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.hdr-inner {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.logo-wrap {
+  width: 58px; height: 58px;
+  border-radius: 10px; overflow: hidden;
+  background: #fff; padding: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-wrap svg { width: 100%; height: 100%; }
+
+.brand-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px; font-weight: 800;
+  color: #fff; letter-spacing: -.5px; line-height: 1.1;
+}
+.brand-sub { font-size: 11.5px; color: rgba(255,255,255,.55); margin-top: 3px; }
+.break-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 5px;
+  background: #FFF8EC; color: #7A5000;
+  border: 1px solid #F5CC7A; font-size: 10.5px; font-weight: 600;
+}
+.rule-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 6px;
+  background: rgba(41,171,226,.15); color: #A8DDFF;
+  border: 1px solid rgba(41,171,226,.35); font-size: 11.5px; font-weight: 700;
+}
+
+.clock-display { text-align: right; }
+.clock-time {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 32px; font-weight: 700;
+  color: #29ABE2; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.clock-date { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 2px; }
+
+.hdr-divider { width: 1px; height: 44px; background: rgba(255,255,255,.15); }
+
+.avg-rate-label { font-size: 10px; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3px; }
+.avg-rate-val { font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800; color: #2ECC71; }
+.avg-rate-note { font-size: 10px; color: rgba(255,255,255,.35); }
+
+/* ══════════════════════════════════════════
+   CONNECTION STATUS
+══════════════════════════════════════════ */
+.conn-bar {
+  background: rgba(3,34,76,.8);
+  border-bottom: 1px solid rgba(41,171,226,.2);
+  padding: 5px 20px;
+  font-size: 11px;
+  display: flex; align-items: center; gap: 8px;
+  justify-content: flex-end;
+}
+.conn-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #F39C12;
+  transition: background .3s;
+}
+.conn-dot.connected { background: #2ECC71; animation: pulse-green 2s infinite; }
+.conn-dot.error { background: #E74C3C; }
+@keyframes pulse-green {
+  0%,100% { box-shadow: 0 0 0 0 rgba(46,204,113,.5); }
+  50% { box-shadow: 0 0 0 5px rgba(46,204,113,0); }
+}
+
+/* ══════════════════════════════════════════
+   STAT CARDS
+══════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.scard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,113,188,.08);
+  transition: transform .2s, box-shadow .2s;
+}
+.scard:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,113,188,.14); }
+.scard-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.scard-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 6px; }
+.scard-val { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; color: var(--text); line-height: 1; }
+.scard-note { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ══════════════════════════════════════════
+   GANTT CHART
+══════════════════════════════════════════ */
+.gantt-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0,113,188,.08);
+  margin-bottom: 20px;
+}
+.gantt-header {
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #EBF4FB, #E0EFF8);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.gantt-header h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .06em; }
+.gantt-scroll { overflow-x: auto; }
+.gantt-canvas-wrap { position: relative; }
+canvas#ganttCanvas { display: block; }
+.gantt-legend {
+  padding: 10px 20px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  font-size: 11px; color: var(--muted);
+}
+.gantt-legend-item { display: flex; align-items: center; gap: 5px; }
+.gantt-legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════
+   SECTION HEADERS
+══════════════════════════════════════════ */
+.sh {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.sh-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%; flex-shrink: 0;
+}
+.sh-label {
+  font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted);
+}
+.sh-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+/* ══════════════════════════════════════════
+   TABLE
+══════════════════════════════════════════ */
+.tbox {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0,113,188,.08);
+  margin-bottom: 20px;
+}
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--blue);
+  background: linear-gradient(90deg, #EBF4FB, #E0EFF8);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 12px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid #E0EFF8;
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody td:first-child { border-left: 4px solid transparent; }
+
+.r-done td { background: #F0FBF4; }
+.r-done td:first-child { border-left-color: #2ECC71; }
+
+.r-ok td { background: #EAF4FC; }
+.r-ok td:first-child { border-left-color: #0071BC; }
+
+.r-late td { animation: lf 2s ease-in-out infinite; }
+.r-late td:first-child { border-left-color: #E74C3C; }
+@keyframes lf { 0%,100% { background: #FEF0EF; } 50% { background: #FDDCDA; } }
+
+.r-pend td { background: #F5F9FC; opacity: .75; }
+.r-pend td:first-child { border-left-color: #B0C8DA; }
+
+/* ══════════════════════════════════════════
+   BADGES
+══════════════════════════════════════════ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.b-done  { background: #E8F9EE; color: #1A7A3A; border: 1px solid #A3D9B0; }
+.b-ok    { background: #E0F0FA; color: #084E84; border: 1px solid #7CBFE0; }
+.b-late  { background: #FEEDED; color: #8A0000; border: 1px solid #F5A0A0; }
+.b-pend  { background: #EEF4F8; color: #5A7A99; border: 1px solid #C8DAE6; }
+.b-pal   { background: #FFF0E0; color: #8A4200; border: 1px solid #F5C07A; }
+.b-dkm   { background: #E0F0FA; color: #084E84; border: 1px solid #7CBFE0; }
+
+/* ══════════════════════════════════════════
+   DOTS & PROGRESS
+══════════════════════════════════════════ */
+.dot {
+  display: inline-block; width: 9px; height: 9px;
+  border-radius: 50%; flex-shrink: 0;
+}
+.d-blue  { background: #0071BC; animation: pb 1.4s infinite; }
+.d-green { background: #2ECC71; }
+.d-red   { background: #E74C3C; animation: pr 1s infinite; }
+.d-grey  { background: #B0C8DA; }
+@keyframes pb { 0%,100% { box-shadow: 0 0 0 0 rgba(0,113,188,.5); } 50% { box-shadow: 0 0 0 5px rgba(0,113,188,0); } }
+@keyframes pr { 0%,100% { box-shadow: 0 0 0 0 rgba(231,76,60,.5); } 50% { box-shadow: 0 0 0 6px rgba(231,76,60,0); } }
+
+.prog-o {
+  background: #D6E9F5; border-radius: 999px;
+  height: 7px; width: 100px; overflow: hidden; flex-shrink: 0;
+}
+.prog-i { height: 100%; border-radius: 999px; transition: width 1s ease; }
+
+/* ══════════════════════════════════════════
+   ACTION BUTTONS
+══════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 7px;
+  font-size: 11.5px; font-weight: 700;
+  border: none; cursor: pointer;
+  transition: all .18s; white-space: nowrap;
+  font-family: 'Barlow', sans-serif;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #005fa3; }
+.btn-success { background: #2ECC71; color: #fff; }
+.btn-success:hover:not(:disabled) { background: #27ae60; }
+.btn-danger  { background: #E74C3C; color: #fff; }
+.btn-danger:hover:not(:disabled)  { background: #c0392b; }
+.btn-ghost   { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled)   { background: #EAF4FC; color: var(--blue); border-color: var(--blue); }
+.btn-amber   { background: #F39C12; color: #fff; }
+.btn-amber:hover:not(:disabled)   { background: #e67e22; }
+
+/* ══════════════════════════════════════════
+   TOOLBAR
+══════════════════════════════════════════ */
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+  margin-bottom: 18px;
+}
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.modal-backdrop {
+  display: none;
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(3,34,76,.65);
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 100%; max-width: 460px;
+  margin: 20px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.3);
+  animation: modal-in .25s ease;
+  overflow: hidden;
+}
+@keyframes modal-in { from { transform: scale(.92) translateY(20px); opacity: 0; } }
+.modal-header {
+  padding: 20px 24px 16px;
+  background: linear-gradient(135deg, #03224C, #0071BC);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-header h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 800;
+  color: #fff; letter-spacing: -.3px;
+}
+.modal-close {
+  background: rgba(255,255,255,.15);
+  border: none; color: #fff;
+  width: 30px; height: 30px; border-radius: 8px;
+  font-size: 18px; cursor: pointer; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.modal-close:hover { background: rgba(255,255,255,.25); }
+.modal-body { padding: 24px; }
+
+.form-row {
+  display: grid; gap: 14px;
+  margin-bottom: 14px;
+}
+.form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+.form-control {
+  padding: 10px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13.5px; font-weight: 500;
+  font-family: 'Barlow', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+}
+.form-control:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0,113,188,.15);
+  background: #fff;
+}
+.modal-footer {
+  padding: 16px 24px 20px;
+  display: flex; justify-content: flex-end; gap: 10px;
+  border-top: 1px solid var(--border);
+  background: #F5F9FC;
+}
+
+/* ══════════════════════════════════════════
+   TOAST / ALERT
+══════════════════════════════════════════ */
+.toast-container {
+  position: fixed; top: 16px; right: 16px;
+  z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: var(--surface);
+  border: 2px solid #E74C3C;
+  border-radius: 10px;
+  padding: 12px 16px;
+  max-width: 340px;
+  box-shadow: 0 6px 30px rgba(0,0,0,.15);
+  animation: toast-in .3s ease;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.toast.success { border-color: #2ECC71; }
+.toast.info    { border-color: #0071BC; }
+@keyframes toast-in { from { transform: translateX(120%); opacity: 0; } }
+.toast-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 18px; line-height: 1;
+  margin-left: auto; flex-shrink: 0;
+  padding: 0 0 0 8px;
+}
+
+/* ══════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════ */
+.empty-state {
+  text-align: center; padding: 48px 20px;
+  color: var(--muted);
+}
+.empty-state svg { margin-bottom: 12px; opacity: .4; }
+.empty-state p { font-size: 14px; }
+
+/* ══════════════════════════════════════════
+   LOADING OVERLAY
+══════════════════════════════════════════ */
+.loading-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(3,34,76,.85);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: #fff;
+}
+.loading-spinner {
+  width: 48px; height: 48px;
+  border: 4px solid rgba(255,255,255,.2);
+  border-top-color: #29ABE2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay.hidden { display: none; }
+
+/* ══════════════════════════════════════════
+   FOOTER NOTE
+══════════════════════════════════════════ */
+.footer-note {
+  font-size: 11px; color: var(--muted);
+  display: flex; justify-content: space-between;
+  flex-wrap: wrap; gap: 6px;
+  margin-top: 4px; margin-bottom: 40px;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  thead th, tbody td { padding: 9px 8px; font-size: 11.5px; }
+  .hide-m { display: none !important; }
+  .prog-o { width: 70px; }
+  .form-row.cols-2 { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════════
+   CONFIRM DIALOG
+══════════════════════════════════════════ */
+.confirm-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 1100;
+  background: rgba(3,34,76,.7);
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-box {
+  background: var(--surface); border-radius: 14px;
+  padding: 28px 28px 20px; max-width: 380px; width: 100%; margin: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  animation: modal-in .2s ease;
+}
+.confirm-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.confirm-msg { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOADING ══ -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div style="font-family:&#39;Barlow Condensed&#39;,sans-serif;font-size:18px;font-weight:600;letter-spacing:.05em;">VERİTABANINA BAĞLANIYOR…</div>
+</div>
+
+<!-- ══ TOAST CONTAINER ══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ══ MODAL: Araç Ekle ══ -->
+<div class="modal-backdrop" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>➕ Yeni Araç Ekle</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Bayi / Firma Adı *</label>
+          <input class="form-control" id="f_bayi" type="text" placeholder="ör. Mas Tüketim" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label class="form-label">Damacana Sayısı *</label>
+          <input class="form-control" id="f_damacana" type="number" min="1" max="9999" placeholder="ör. 500">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Yükleme Tipi *</label>
+          <select class="form-control" id="f_tip">
+            <option value="Döküm">📦 Döküm</option>
+            <option value="Paletli">🪵 Paletli</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label class="form-label">Geliş Saati *</label>
+          <input class="form-control" id="f_gelis" type="time" value="17:00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sıra</label>
+          <input class="form-control" id="f_sira" type="number" min="1" max="99" placeholder="otomatik">
+        </div>
+      </div>
+      <div id="modalPreview" style="display:none;margin-top:4px;padding:12px;background:#EBF4FB;border-radius:8px;border:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">İptal</button>
+      <button class="btn btn-primary" id="btnAddSave" onclick="saveArac()">💾 Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM DIALOG ══ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Emin misiniz?</div>
+    <div class="confirm-msg" id="confirmMsg">Bu işlem geri alınamaz.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm(false)">İptal</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="closeConfirm(true)">Evet, Devam Et</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <!-- Logo + Brand -->
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="logo-wrap">
+        <!-- SVG Placeholder Logo -->
+        <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="54" height="54" rx="8" fill="#03224C"></rect>
+          <text x="27" y="34" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="800" font-size="16" fill="#29ABE2">AK</text>
+          <line x1="10" y1="38" x2="44" y2="38" stroke="#0071BC" stroke-width="2"></line>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">
+          AKDORUK <span style="color:#29ABE2;font-size:17px;font-weight:600;">Doğal Kaynak Suyu</span>
+        </div>
+        <div class="brand-sub" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px;">
+          <span>Araç Dolum &amp; Sevkiyat Takip — Vardiya 17:00–02:00</span>
+          <span class="break-chip">☕ Çay: 19:00–19:15</span>
+          <span class="break-chip">🍽 Yemek: 21:00–22:00</span>
+        </div>
+      </div>
+    </div>
+    <!-- Right -->
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+      <div class="rule-chip">⏱ Kural: +10 dk geç bitir</div>
+      <div class="hdr-divider"></div>
+      <div class="clock-display">
+        <div class="clock-time" id="liveClock">03:08:49</div>
+        <div class="clock-date" id="liveDate">Cum 17 Nis 2026</div>
+      </div>
+      <div class="hdr-divider"></div>
+      <div style="text-align:center;">
+        <div class="avg-rate-label">Net Ort. Hız</div>
+        <div class="avg-rate-val" id="avgRate">—</div>
+        <div class="avg-rate-note">(mola hariç)</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ CONNECTION BAR ══ -->
+<div class="conn-bar">
+  <div class="conn-dot connected" id="connDot"></div>
+  <span id="connLabel" style="color: rgba(46, 204, 113, 0.7);">Supabase Realtime bağlı • arac_takip tablosu dinleniyor</span>
+  <span style="color:rgba(255,255,255,.25);">|</span>
+  <span id="lastUpd" style="color:rgba(255,255,255,.35);">Son güncelleme: 03:08:49</span>
+</div>
+
+<!-- ══ MAIN CONTENT ══ -->
+<div style="max-width:1480px;margin:0 auto;padding:20px 20px 0;">
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="scard">
+      <div class="scard-bar" style="background:linear-gradient(90deg,#0071BC,#29ABE2);"></div>
+      <div class="scard-label">Toplam Araç</div>
+      <div class="scard-val cond" id="statTotal">—</div>
+      <div class="scard-note">Bu vardiyada</div>
+    </div>
+    <div class="scard">
+      <div class="scard-bar" style="background:linear-gradient(90deg,#2ECC71,#27AE60);"></div>
+      <div class="scard-label">Tamamlanan</div>
+      <div class="scard-val cond" id="statDone" style="color:#2ECC71;">—</div>
+      <div class="scard-note">Çıkış yapıldı</div>
+    </div>
+    <div class="scard">
+      <div class="scard-bar" style="background:linear-gradient(90deg,#0071BC,#29ABE2);"></div>
+      <div class="scard-label">Aktif / Bekleyen</div>
+      <div class="scard-val cond" id="statActive" style="color:#0071BC;">—</div>
+      <div class="scard-note">Yükleme sürüyor</div>
+    </div>
+    <div class="scard">
+      <div class="scard-bar" style="background:linear-gradient(90deg,#F39C12,#E67E22);"></div>
+      <div class="scard-label">Toplam Damacana</div>
+      <div class="scard-val cond" id="statDamacana" style="color:#F39C12;">—</div>
+      <div class="scard-note">Vardiya toplamı</div>
+    </div>
+    <div class="scard">
+      <div class="scard-bar" style="background:linear-gradient(90deg,#E74C3C,#C0392B);"></div>
+      <div class="scard-label">Gecikme</div>
+      <div class="scard-val cond" id="statLate" style="color:#E74C3C;">0</div>
+      <div class="scard-note">Süre aşımı (+10dk)</div>
+    </div>
+  </div>
+
+  <!-- GANTT CHART -->
+  <div class="gantt-section">
+    <div class="gantt-header">
+      <h3>📊 Dolum Zaman Çizelgesi (Gantt)</h3>
+      <span style="font-size:11px;color:var(--muted);">Gerçek zamanlı • Mola hariç hesaplandı</span>
+    </div>
+    <div class="gantt-scroll">
+      <div class="gantt-canvas-wrap" id="ganttWrap">
+        <canvas id="ganttCanvas" width="1438" height="80"></canvas>
+      </div>
+    </div>
+    <div class="gantt-legend">
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#2ECC71;"></div> Tamamlandı</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#0071BC;"></div> Yükleniyor</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#E74C3C;"></div> Gecikiyor</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#B0C8DA;"></div> Bekliyor</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#FFF0E0;border:1px solid #F5CC7A;"></div> Mola Dönemi</div>
+      <span style="margin-left:auto;">▶ Şu anki zaman çizgisi</span>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="openModal()">➕ Araç Ekle</button>
+      <button class="btn btn-amber" onclick="confirmReset()">🔄 Vardiyayı Sıfırla</button>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);">
+      <span id="shiftInfo">—</span>
+    </div>
+  </div>
+
+  <!-- SECTION: TAMAMLANAN -->
+  <div class="sh" id="shComp" style="display:none;">
+    <div class="sh-dot" style="background:#2ECC71;box-shadow:0 0 8px #2ECC71;"></div>
+    <span class="sh-label">Tamamlanan Araçlar</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="tbox" id="tboxComp" style="display:none;margin-bottom:20px;">
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bayi / Firma</th>
+            <th>Tip</th>
+            <th>Damacana</th>
+            <th>Başlangıç</th>
+            <th>Bitiş (Gerçek)</th>
+            <th class="hide-m">Brüt Süre</th>
+            <th class="hide-m">Mola Kesintisi</th>
+            <th class="hide-m">Net Hız</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="tbComp"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION: AKTİF & PLANLANAN -->
+  <div class="sh">
+    <div class="sh-dot" style="background:#0071BC;box-shadow:0 0 8px rgba(0,113,188,.6);animation:pb 1.4s infinite;"></div>
+    <span class="sh-label">Aktif &amp; Planlanan Araçlar</span>
+    <div class="sh-line"></div>
+  </div>
+
+  <div class="tbox" style="margin-bottom:10px;">
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bayi / Firma</th>
+            <th>Tip</th>
+            <th>Damacana</th>
+            <th>Başlangıç</th>
+            <th>Beklenen Bitiş <small style="font-weight:400;opacity:.7;">(net+10dk)</small></th>
+            <th class="hide-m">Kalan / Geçen</th>
+            <th class="hide-m">İlerleme</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="tbActive"><tr><td colspan="10"><div class="empty-state"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#B0C8DA" stroke-width="1.5"></circle><path d="M8 12h8M12 8v8" stroke="#B0C8DA" stroke-width="1.5" stroke-linecap="round"></path></svg><p>Aktif araç yok. "Araç Ekle" ile yeni araç ekleyin.</p></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOOTER NOTE -->
+  <div class="footer-note">
+    <span>* Net hız mola süreleri düşülerek hesaplanmıştır (☕ 15dk + 🍽 60dk) | Paletli yükleme 2× hız | Beklenen bitiş = hesaplanan süre + 10dk kural</span>
+    <span id="lastUpdFooter">Son güncelleme: 03:08:49</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT — TÜM MANTIK
+══════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────
+   1. SUPABASE BAĞLANTISI
+───────────────────────────────────────── */
+const SUPABASE_URL = 'https://uovcmvixkwodvccchagv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_vMiZJPzLxuf6jgxtut1pow_fS64b6BX';
+
+let supabase_client;
+try {
+  supabase_client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch(e) {
+  console.error('Supabase init error:', e);
+}
+
+/* ─────────────────────────────────────────
+   2. SABITLER
+───────────────────────────────────────── */
+const SHIFT_START = toMin(17, 0);
+const SHIFT_END   = toMin(26, 0); // 02:00 ertesi gün
+const EXTRA_MIN   = 10;           // Şirket kuralı +10dk
+
+// Mola tanımları
+const BREAKS = [
+  { label: '☕ Çay',  start: toMin(19,  0), end: toMin(19, 15), color: '#FFF8EC' },
+  { label: '🍽 Yemek', start: toMin(21,  0), end: toMin(22,  0), color: '#FFF0E0' },
+];
+
+// Ortalama dolum hızı (adet/dk) — gerçek veri gelene kadar kullanılır
+let AVG_RATE = 8.5;
+
+/* ─────────────────────────────────────────
+   3. YARDIMCI FONKSİYONLAR
+───────────────────────────────────────── */
+function toMin(h, m) { return h * 60 + m; }
+
+function lbl(min) {
+  let h = Math.floor(min / 60) % 24;
+  if (h < 0) h += 24;
+  const m = Math.round(((min % 60) + 60) % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function fmtDur(min) {
+  const a = Math.abs(Math.round(min));
+  const h = Math.floor(a / 60);
+  const m = a % 60;
+  return h > 0 ? `${h}sa ${m}dk` : `${m}dk`;
+}
+
+function nowMin() {
+  const n = new Date();
+  return n.getHours() * 60 + n.getMinutes() + n.getSeconds() / 60;
+}
+
+function timeStrToMin(str) {
+  if (!str) return null;
+  const parts = str.split(':');
+  return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
+// Bir aralıktaki toplam mola süresi
+function breakMins(s, e) {
+  let t = 0;
+  for (const b of BREAKS) {
+    const os = Math.max(s, b.start);
+    const oe = Math.min(e, b.end);
+    if (oe > os) t += oe - os;
+  }
+  return t;
+}
+
+// Mola atlayarak bitiş dakikasını hesapla (net çalışma süresi verilince)
+function calcEnd(startMin, netNeeded) {
+  let cursor = startMin, rem = netNeeded;
+  let guard = 0;
+  while (rem > 0.01 && guard < 1000) {
+    guard++;
+    let jumped = false;
+    for (const b of BREAKS) {
+      if (cursor >= b.start && cursor < b.end) {
+        cursor = b.end;
+        jumped = true;
+        break;
+      }
+    }
+    if (jumped) continue;
+    let nb = Infinity;
+    for (const b of BREAKS) if (b.start > cursor) nb = Math.min(nb, b.start);
+    const work = nb === Infinity ? rem : Math.min(rem, nb - cursor);
+    cursor += work;
+    rem -= work;
+  }
+  return cursor;
+}
+
+/* ─────────────────────────────────────────
+   4. ZİNCİRLEME PLANLAMA MOTORU
+   Tüm araçları (bekleyen+aktif) sırasına
+   göre baştan hesaplar. Biten araçlar
+   sabit tutulur, henüz başlamayanlar
+   yeniden planlanır.
+───────────────────────────────────────── */
+function computeSchedule(araçlar) {
+  // Sıraya göre sırala
+  const sorted = [...araçlar].sort((a, b) => a.sira - b.sira);
+
+  // Tamamlananlar için gerçek bitiş kullan
+  // Aktif/bekleyenler için öncekinin bitiş saatinden itibaren hesapla
+  let cursor = SHIFT_START;
+
+  sorted.forEach(v => {
+    if (v.durum === 'tamamlandi') {
+      // Gerçek bitiş varsa onu kullan
+      if (v.gercek_bitis) cursor = v.gercek_bitis + EXTRA_MIN;
+      else if (v.bitis_dk) cursor = v.bitis_dk;
+      return;
+    }
+
+    // Başlangıç: max(cursor, geliş saati)
+    const gelisMin = timeStrToMin(v.gelis_saati) || SHIFT_START;
+    const start = Math.max(cursor, gelisMin);
+
+    // Net ihtiyaç (paletli 2× hız → yarı süre)
+    const isPal = v.tip === 'Paletli';
+    const netNeeded = Math.ceil(v.damacana / (isPal ? AVG_RATE * 2 : AVG_RATE));
+
+    // Mola atlayarak bitiş
+    const netEnd = calcEnd(start, netNeeded);
+    const dispEnd = netEnd + EXTRA_MIN;
+
+    v.baslangic_dk = start;
+    v.bitis_dk     = dispEnd;
+    v._netNeeded   = netNeeded;
+    v._netEnd      = netEnd;
+
+    cursor = dispEnd;
+  });
+
+  return sorted;
+}
+
+/* ─────────────────────────────────────────
+   5. VERİ KATMANI
+───────────────────────────────────────── */
+let araçlar = [];
+let realtime_channel = null;
+
+async function loadData() {
+  try {
+    const { data, error } = await supabase_client
+      .from('arac_takip')
+      .select('*')
+      .order('sira', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    araçlar = data || [];
+    recalcAvgRate();
+    araçlar = computeSchedule(araçlar);
+    renderAll();
+    setConnected(true);
+  } catch(err) {
+    console.error('loadData error:', err);
+    setConnected(false, err.message || 'Bağlantı hatası');
+  }
+}
+
+function recalcAvgRate() {
+  const done = araçlar.filter(a => a.durum === 'tamamlandi' && a.gercek_bitis && a.baslangic_dk);
+  if (done.length === 0) return;
+
+  let totalDok = 0, totalNet = 0;
+  done.forEach(d => {
+    const gross = d.gercek_bitis - d.baslangic_dk;
+    const mola  = breakMins(d.baslangic_dk, d.gercek_bitis);
+    const net   = gross - mola;
+    if (net > 0) { totalDok += d.damacana; totalNet += net; }
+  });
+
+  if (totalNet > 0) {
+    AVG_RATE = totalDok / totalNet;
+    document.getElementById('avgRate').textContent = AVG_RATE.toFixed(2) + ' ad/dk';
+  }
+}
+
+async function addArac(payload) {
+  // Sıra numarası yoksa sonuna ekle
+  if (!payload.sira || payload.sira < 1) {
+    payload.sira = (araçlar.length > 0) ? Math.max(...araçlar.map(a => a.sira)) + 1 : 1;
+  }
+  payload.durum = 'bekliyor';
+
+  const { error } = await supabase_client.from('arac_takip').insert([payload]);
+  if (error) throw error;
+  showToast('Araç başarıyla eklendi!', 'success');
+  await loadData();
+}
+
+async function finishArac(id) {
+  const now = Math.round(nowMin());
+  const { error } = await supabase_client
+    .from('arac_takip')
+    .update({ durum: 'tamamlandi', gercek_bitis: now })
+    .eq('id', id);
+  if (error) throw error;
+  showToast('Yükleme tamamlandı olarak işaretlendi.', 'success');
+  await loadData();
+}
+
+async function deleteArac(id) {
+  const { error } = await supabase_client.from('arac_takip').delete().eq('id', id);
+  if (error) throw error;
+  showToast('Araç silindi.', 'info');
+  await loadData();
+}
+
+async function resetVardiya() {
+  const { error } = await supabase_client.from('arac_takip').delete().neq('id', 0);
+  if (error) throw error;
+  araçlar = [];
+  AVG_RATE = 8.5;
+  renderAll();
+  showToast('Vardiya sıfırlandı. Tüm veriler temizlendi.', 'info');
+  setConnected(true);
+}
+
+/* ─────────────────────────────────────────
+   6. REALTIME SUBSCRIPTION
+───────────────────────────────────────── */
+function subscribeRealtime() {
+  if (!supabase_client) return;
+
+  realtime_channel = supabase_client
+    .channel('arac_takip_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'arac_takip' }, () => {
+      loadData();
+    })
+    .subscribe(status => {
+      if (status === 'SUBSCRIBED') {
+        setConnected(true);
+      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        setConnected(false, 'Realtime bağlantısı kesildi');
+      }
+    });
+}
+
+/* ─────────────────────────────────────────
+   7. RENDER FONKSIYONLARI
+───────────────────────────────────────── */
+let alertShown = {};
+let audioCtx = null;
+
+function beep() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.frequency.setValueAtTime(900, audioCtx.currentTime);
+    o.frequency.setValueAtTime(620, audioCtx.currentTime + .18);
+    o.frequency.setValueAtTime(900, audioCtx.currentTime + .36);
+    g.gain.setValueAtTime(.3, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .6);
+    o.start(); o.stop(audioCtx.currentTime + .6);
+  } catch(e) {}
+}
+
+function renderAll() {
+  renderStats();
+  renderCompleted();
+  renderActive();
+  renderGantt();
+  updateTimestamp();
+}
+
+function renderStats() {
+  const total   = araçlar.length;
+  const done    = araçlar.filter(a => a.durum === 'tamamlandi').length;
+  const active  = araçlar.filter(a => a.durum === 'yukluyor').length;
+  const pend    = araçlar.filter(a => a.durum === 'bekliyor').length;
+  const now     = nowMin();
+  const late    = araçlar.filter(a => a.durum !== 'tamamlandi' && a.bitis_dk && now > a.bitis_dk).length;
+  const totalDk = araçlar.reduce((s, a) => s + (a.damacana || 0), 0);
+
+  document.getElementById('statTotal').textContent    = total;
+  document.getElementById('statDone').textContent     = done;
+  document.getElementById('statActive').textContent   = active + pend;
+  document.getElementById('statDamacana').textContent = totalDk.toLocaleString('tr');
+
+  const lateEl = document.getElementById('statLate');
+  lateEl.textContent  = late;
+  lateEl.style.color  = late > 0 ? '#E74C3C' : '#2ECC71';
+
+  // Shift info
+  const endFull  = araçlar.filter(a => a.bitis_dk).map(a => a.bitis_dk);
+  const lastEnd  = endFull.length > 0 ? Math.max(...endFull) : null;
+  document.getElementById('shiftInfo').textContent =
+    lastEnd ? `Tahmini vardiya bitişi: ${lbl(lastEnd)}` : 'Henüz araç eklenmedi';
+}
+
+function renderCompleted() {
+  const done = araçlar.filter(a => a.durum === 'tamamlandi');
+  const shEl   = document.getElementById('shComp');
+  const tbEl   = document.getElementById('tboxComp');
+  const tbody  = document.getElementById('tbComp');
+
+  if (done.length === 0) {
+    shEl.style.display = 'none';
+    tbEl.style.display = 'none';
+    return;
+  }
+  shEl.style.display = 'flex';
+  tbEl.style.display = 'block';
+
+  tbody.innerHTML = '';
+  done.forEach(c => {
+    const gross  = (c.gercek_bitis || c.bitis_dk || 0) - (c.baslangic_dk || 0);
+    const mola   = breakMins(c.baslangic_dk || 0, c.gercek_bitis || c.bitis_dk || 0);
+    const net    = gross - mola;
+    const rate   = net > 0 ? (c.damacana / net).toFixed(2) : '—';
+    const molaTxt = mola > 0
+      ? `<span style="font-size:11px;color:#F39C12;font-weight:600;">-${mola}dk mola</span>`
+      : `<span style="font-size:11px;color:#27AE60;">Mola yok</span>`;
+
+    const tr = document.createElement('tr');
+    tr.className = 'r-done';
+    tr.innerHTML = `
+      <td class="cond" style="color:#6B8EAB;font-size:13px;font-weight:700;">#${c.sira}</td>
+      <td>
+        <div style="font-weight:700;">${esc(c.bayi_adi)}</div>
+        <div style="font-size:11px;color:#6B8EAB;margin-top:2px;">Çıkış yapıldı ✓</div>
+      </td>
+      <td><span class="badge ${c.tip==='Paletli'?'b-pal':'b-dkm'}">${c.tip==='Paletli'?'🪵 Paletli':'📦 Döküm'}</span></td>
+      <td>
+        <div class="cond" style="font-size:18px;font-weight:800;color:#0071BC;">${c.damacana.toLocaleString('tr')}</div>
+        <div style="font-size:10.5px;color:#6B8EAB;">adet</div>
+      </td>
+      <td class="cond" style="font-weight:600;color:#3A5A78;">${c.baslangic_dk ? lbl(c.baslangic_dk) : '—'}</td>
+      <td class="cond" style="font-weight:600;color:#3A5A78;">${c.gercek_bitis ? lbl(c.gercek_bitis) : '—'}</td>
+      <td class="hide-m" style="font-weight:600;">${gross > 0 ? fmtDur(gross) + ' brüt' : '—'}</td>
+      <td class="hide-m">${molaTxt}</td>
+      <td class="hide-m" style="color:#6B8EAB;font-size:12px;">${rate} ad/dk</td>
+      <td><span class="badge b-done">✓ Tamamlandı</span></td>
+      <td>
+        <button class="btn btn-danger" style="font-size:10.5px;padding:4px 9px;" onclick="confirmDelete(${c.id})">🗑 Sil</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderActive() {
+  const tbody  = document.getElementById('tbActive');
+  tbody.innerHTML = '';
+
+  const pending = araçlar.filter(a => a.durum !== 'tamamlandi')
+    .sort((a, b) => a.sira - b.sira);
+
+  if (pending.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#B0C8DA" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="#B0C8DA" stroke-width="1.5" stroke-linecap="round"/></svg><p>Aktif araç yok. "Araç Ekle" ile yeni araç ekleyin.</p></div></td></tr>`;
+    return;
+  }
+
+  const now = nowMin();
+  let lateCount = 0;
+
+  pending.forEach(v => {
+    const started  = v.baslangic_dk !== null && now >= v.baslangic_dk;
+    const overdue  = v.bitis_dk && now > v.bitis_dk;
+    const remaining = v.bitis_dk ? v.bitis_dk - now : 0;
+    const span     = v.bitis_dk && v.baslangic_dk ? v.bitis_dk - v.baslangic_dk : 1;
+    const elapsed  = started ? Math.min(now - (v.baslangic_dk || now), span) : 0;
+    const pct      = started ? Math.min(elapsed / span * 100, 100) : 0;
+    const molaDk   = v.baslangic_dk && v.bitis_dk ? breakMins(v.baslangic_dk, v.bitis_dk) : 0;
+    const netDk    = v._netNeeded || 0;
+
+    let rowCls, badge, statusTxt, dotCls, progColor;
+
+    if (!started) {
+      rowCls = 'r-pend'; dotCls = 'd-grey'; progColor = '#B0C8DA';
+      badge = `<span class="badge b-pend">⋯ Bekleniyor</span>`;
+      statusTxt = `<span style="color:#6B8EAB;font-size:12px;">${v.baslangic_dk ? lbl(v.baslangic_dk)+"'de başlar" : '—'}</span>`;
+    } else if (overdue) {
+      lateCount++;
+      const over = Math.ceil(now - v.bitis_dk);
+      rowCls = 'r-late'; dotCls = 'd-red'; progColor = '#E74C3C';
+      badge = `<span class="badge b-late">🚨 Gecikiyor</span>`;
+      statusTxt = `<span style="color:#E74C3C;font-weight:700;">+${fmtDur(over)} aşıldı</span>`;
+      if (!alertShown[v.id]) {
+        alertShown[v.id] = true;
+        beep();
+        showToast(`${v.bayi_adi} — beklenen bitiş aşıldı! (+${fmtDur(over)})`, 'error');
+      }
+    } else {
+      rowCls = 'r-ok'; dotCls = 'd-blue'; progColor = '#0071BC';
+      badge = `<span class="badge b-ok">▶ Yükleniyor</span>`;
+      statusTxt = `<span style="color:#0071BC;font-weight:600;">${fmtDur(remaining)} kaldı</span>`;
+    }
+
+    const molaTxt = molaDk > 0
+      ? `<div style="font-size:10px;color:#F39C12;margin-top:2px;">+${molaDk}dk mola dahil</div>`
+      : '';
+
+    const tr = document.createElement('tr');
+    tr.className = rowCls;
+    tr.innerHTML = `
+      <td class="cond" style="color:#6B8EAB;font-size:13px;font-weight:700;">#${v.sira}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="dot ${dotCls}"></span>
+          <div>
+            <div style="font-weight:700;">${esc(v.bayi_adi)}</div>
+            <div style="font-size:11px;color:#6B8EAB;margin-top:2px;">${netDk}dk net + ${EXTRA_MIN}dk kural</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="badge ${v.tip==='Paletli'?'b-pal':'b-dkm'}">${v.tip==='Paletli'?'🪵 Paletli':'📦 Döküm'}</span></td>
+      <td>
+        <div class="cond" style="font-size:18px;font-weight:800;color:#0071BC;">${v.damacana.toLocaleString('tr')}</div>
+        <div style="font-size:10.5px;color:#6B8EAB;">adet</div>
+      </td>
+      <td class="cond" style="font-weight:600;color:#3A5A78;">${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'}</td>
+      <td>
+        <div class="cond" style="font-weight:700;color:#0D1E33;font-size:15px;">${v.bitis_dk ? lbl(v.bitis_dk) : '—'}</div>
+        ${molaTxt}
+      </td>
+      <td class="hide-m">${statusTxt}</td>
+      <td class="hide-m">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div class="prog-o"><div class="prog-i" style="width:${pct.toFixed(1)}%;background:${progColor};"></div></div>
+          <span style="font-size:11px;color:#6B8EAB;min-width:30px;">${Math.round(pct)}%</span>
+        </div>
+      </td>
+      <td>${badge}</td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${v.durum !== 'tamamlandi' ? `<button class="btn btn-success" style="font-size:10.5px;padding:4px 9px;" onclick="confirmFinish(${v.id})">✅ Bitir</button>` : ''}
+          <button class="btn btn-danger" style="font-size:10.5px;padding:4px 9px;" onclick="confirmDelete(${v.id})">🗑 Sil</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('statLate').textContent = lateCount;
+  document.getElementById('statLate').style.color = lateCount > 0 ? '#E74C3C' : '#2ECC71';
+}
+
+/* ─────────────────────────────────────────
+   8. GANTT CHART (Canvas)
+───────────────────────────────────────── */
+function renderGantt() {
+  const canvas = document.getElementById('ganttCanvas');
+  const wrap   = document.getElementById('ganttWrap');
+  if (!canvas) return;
+
+  const ROW_H      = 44;
+  const LABEL_W    = 170;
+  const PADDING    = 16;
+  const HEADER_H   = 32;
+  const allArac    = [...araçlar].sort((a, b) => a.sira - b.sira);
+  const rows       = allArac.length;
+
+  if (rows === 0) {
+    canvas.width  = wrap.clientWidth || 800;
+    canvas.height = 80;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, 80);
+    ctx.fillStyle = '#B0C8DA';
+    ctx.font = '13px Barlow, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Gantt görünümü için araç ekleyin', canvas.width / 2, 42);
+    return;
+  }
+
+  // Time range
+  const allStarts = allArac.filter(a => a.baslangic_dk).map(a => a.baslangic_dk);
+  const allEnds   = allArac.filter(a => a.bitis_dk).map(a => a.bitis_dk);
+  const tMin = allStarts.length ? Math.min(...allStarts) - 15 : SHIFT_START;
+  const tMax = allEnds.length   ? Math.max(...allEnds)   + 15 : SHIFT_END;
+  const tRange = tMax - tMin;
+
+  // Canvas size
+  const canvasW = Math.max(wrap.clientWidth || 900, LABEL_W + tRange * 4 + PADDING * 2);
+  const canvasH = HEADER_H + rows * ROW_H + PADDING;
+  canvas.width  = canvasW;
+  canvas.height = canvasH;
+  canvas.style.width  = canvasW + 'px';
+  canvas.style.height = canvasH + 'px';
+
+  const ctx    = canvas.getContext('2d');
+  const chartW = canvasW - LABEL_W - PADDING * 2;
+  const now    = nowMin();
+
+  // Map time→x
+  const tx = (min) => LABEL_W + PADDING + ((min - tMin) / tRange) * chartW;
+
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  // Background
+  ctx.fillStyle = '#F8FBFE';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  // Header background
+  ctx.fillStyle = '#EBF4FB';
+  ctx.fillRect(0, 0, canvasW, HEADER_H);
+
+  // Time axis ticks (every 30 min)
+  ctx.font = '10px Barlow Condensed, sans-serif';
+  ctx.fillStyle = '#6B8EAB';
+  ctx.textAlign = 'center';
+  for (let t = Math.ceil(tMin / 30) * 30; t <= tMax; t += 30) {
+    const x = tx(t);
+    ctx.fillText(lbl(t), x, 20);
+    ctx.strokeStyle = '#D6E9F5';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, HEADER_H);
+    ctx.lineTo(x, canvasH - PADDING);
+    ctx.stroke();
+  }
+
+  // Break zones
+  BREAKS.forEach(b => {
+    const bx = tx(b.start);
+    const bw = tx(b.end) - bx;
+    ctx.fillStyle = 'rgba(243,156,18,0.08)';
+    ctx.fillRect(bx, HEADER_H, bw, canvasH - HEADER_H - PADDING);
+    ctx.fillStyle = 'rgba(243,156,18,0.5)';
+    ctx.font = '9px Barlow, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(b.label, bx + bw / 2, HEADER_H + 10);
+  });
+
+  // Rows
+  allArac.forEach((v, i) => {
+    const y = HEADER_H + i * ROW_H;
+
+    // Row bg alternating
+    ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#F5F9FC';
+    ctx.fillRect(0, y, canvasW, ROW_H);
+
+    // Row border
+    ctx.strokeStyle = '#E0EFF8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y + ROW_H);
+    ctx.lineTo(canvasW, y + ROW_H);
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = '#0D1E33';
+    ctx.font = 'bold 12px Barlow, sans-serif';
+    ctx.textAlign = 'left';
+    const labelY = y + ROW_H / 2 + 4;
+    ctx.fillText('#' + v.sira + ' ' + v.bayi_adi, 10, labelY);
+    ctx.fillStyle = '#6B8EAB';
+    ctx.font = '10px Barlow, sans-serif';
+    ctx.fillText(v.damacana.toLocaleString('tr') + ' adet', 10, labelY + 13);
+
+    // Bar
+    if (v.baslangic_dk !== null && v.bitis_dk) {
+      const bx = tx(v.baslangic_dk);
+      const bw = Math.max(tx(v.bitis_dk) - bx, 4);
+      const by = y + 8;
+      const bh = ROW_H - 16;
+      const br = 4; // border radius
+
+      // Determine color
+      let barColor, barAlpha;
+      if (v.durum === 'tamamlandi') {
+        barColor = '#2ECC71'; barAlpha = 0.9;
+      } else if (now > v.bitis_dk) {
+        barColor = '#E74C3C'; barAlpha = 0.9;
+      } else if (now >= v.baslangic_dk) {
+        barColor = '#0071BC'; barAlpha = 0.9;
+      } else {
+        barColor = '#B0C8DA'; barAlpha = 0.7;
+      }
+
+      // Draw rounded rect
+      ctx.globalAlpha = barAlpha;
+      ctx.fillStyle = barColor;
+      roundRect(ctx, bx, by, bw, bh, br);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Progress overlay for active
+      if (v.durum !== 'tamamlandi' && now >= v.baslangic_dk) {
+        const pct = Math.min((now - v.baslangic_dk) / (v.bitis_dk - v.baslangic_dk), 1);
+        ctx.globalAlpha = 0.25;
+        ctx.fillStyle = '#fff';
+        roundRect(ctx, bx + bw * pct, by, bw * (1 - pct), bh, br);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // Time label inside bar
+      if (bw > 50) {
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px Barlow Condensed, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(lbl(v.baslangic_dk) + '–' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 4);
+      }
+    }
+  });
+
+  // NOW line
+  if (now >= tMin && now <= tMax) {
+    const nx = tx(now);
+    ctx.strokeStyle = '#E74C3C';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(nx, HEADER_H);
+    ctx.lineTo(nx, canvasH - PADDING);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // NOW label
+    ctx.fillStyle = '#E74C3C';
+    ctx.font = 'bold 10px Barlow Condensed, sans-serif';
+    ctx.textAlign = 'center';
+    const nowLbl = '▼ ' + lbl(now);
+    ctx.fillText(nowLbl, nx, HEADER_H - 2);
+  }
+
+  // Label column separator
+  ctx.strokeStyle = '#BDD8EF';
+  ctx.lineWidth   = 1.5;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(LABEL_W, 0);
+  ctx.lineTo(LABEL_W, canvasH);
+  ctx.stroke();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* ─────────────────────────────────────────
+   9. SAAT & GÜNCELLEME
+───────────────────────────────────────── */
+function updateClock() {
+  const n    = new Date();
+  const hh   = String(n.getHours()).padStart(2, '0');
+  const mm   = String(n.getMinutes()).padStart(2, '0');
+  const ss   = String(n.getSeconds()).padStart(2, '0');
+  const days  = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  const months= ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
+  document.getElementById('liveClock').textContent = `${hh}:${mm}:${ss}`;
+  document.getElementById('liveDate').textContent  =
+    `${days[n.getDay()]} ${n.getDate()} ${months[n.getMonth()]} ${n.getFullYear()}`;
+}
+
+function updateTimestamp() {
+  const n  = new Date();
+  const ts = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
+  document.getElementById('lastUpd').textContent      = `Son güncelleme: ${ts}`;
+  document.getElementById('lastUpdFooter').textContent= `Son güncelleme: ${ts}`;
+}
+
+/* ─────────────────────────────────────────
+   10. MODAL
+───────────────────────────────────────── */
+function openModal() {
+  document.getElementById('addModal').classList.add('open');
+  document.getElementById('f_bayi').focus();
+  updateModalPreview();
+}
+
+function closeModal() {
+  document.getElementById('addModal').classList.remove('open');
+  // Reset form
+  ['f_bayi','f_damacana','f_sira'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f_tip').value = 'Döküm';
+  document.getElementById('f_gelis').value = '17:00';
+  document.getElementById('modalPreview').style.display = 'none';
+}
+
+function updateModalPreview() {
+  const bayi    = document.getElementById('f_bayi').value.trim();
+  const damacana= parseInt(document.getElementById('f_damacana').value) || 0;
+  const tip     = document.getElementById('f_tip').value;
+  const gelis   = document.getElementById('f_gelis').value;
+  const preview = document.getElementById('modalPreview');
+
+  if (!bayi || !damacana) { preview.style.display = 'none'; return; }
+
+  const isPal   = tip === 'Paletli';
+  const rate    = isPal ? AVG_RATE * 2 : AVG_RATE;
+  const netMin  = Math.ceil(damacana / rate);
+  const gelisM  = timeStrToMin(gelis) || SHIFT_START;
+
+  // Find next available slot
+  const lastEnd = araçlar.filter(a => a.durum !== 'tamamlandi' && a.bitis_dk).map(a => a.bitis_dk);
+  const cursor  = lastEnd.length > 0 ? Math.max(...lastEnd) : gelisM;
+  const start   = Math.max(cursor, gelisM);
+  const end     = calcEnd(start, netMin) + EXTRA_MIN;
+
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <strong style="color:#0071BC;">Tahmini Plan:</strong><br>
+    Başlangıç: <strong>${lbl(start)}</strong> &nbsp;→&nbsp;
+    Bitiş: <strong>${lbl(end)}</strong> &nbsp;|&nbsp;
+    Net: <strong>${netMin}dk</strong> &nbsp;|&nbsp;
+    Hız: <strong>${rate.toFixed(1)} ad/dk</strong>
+  `;
+}
+
+async function saveArac() {
+  const btn     = document.getElementById('btnAddSave');
+  const bayi    = document.getElementById('f_bayi').value.trim();
+  const damacana= parseInt(document.getElementById('f_damacana').value);
+  const tip     = document.getElementById('f_tip').value;
+  const gelis   = document.getElementById('f_gelis').value;
+  const sira    = parseInt(document.getElementById('f_sira').value) || 0;
+
+  if (!bayi) { showToast('Lütfen bayi adını girin.', 'error'); return; }
+  if (!damacana || damacana < 1) { showToast('Geçerli bir damacana sayısı girin.', 'error'); return; }
+  if (!gelis) { showToast('Geliş saatini girin.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Kaydediliyor…';
+
+  try {
+    await addArac({ bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
+    closeModal();
+  } catch(err) {
+    showToast('Kayıt hatası: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Kaydet';
+  }
+}
+
+/* ─────────────────────────────────────────
+   11. CONFIRM DIALOG
+───────────────────────────────────────── */
+let _confirmResolve = null;
+
+function showConfirm(title, msg, okLabel = 'Evet, Devam Et', okClass = 'btn-danger') {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  const okBtn = document.getElementById('confirmOkBtn');
+  okBtn.textContent = okLabel;
+  okBtn.className   = `btn ${okClass}`;
+  document.getElementById('confirmOverlay').classList.add('open');
+  return new Promise(res => { _confirmResolve = res; });
+}
+
+function closeConfirm(ok) {
+  document.getElementById('confirmOverlay').classList.remove('open');
+  if (_confirmResolve) { _confirmResolve(ok); _confirmResolve = null; }
+}
+
+async function confirmDelete(id) {
+  const ok = await showConfirm('Aracı Sil', 'Bu araç kalıcı olarak silinecek. Onaylıyor musunuz?');
+  if (ok) await deleteArac(id);
+}
+
+async function confirmFinish(id) {
+  const ok = await showConfirm(
+    'Yüklemeyi Bitir',
+    'Yükleme tamamlandı olarak işaretlenecek ve gerçek bitiş saati kaydedilecek.',
+    'Evet, Bitir', 'btn-success'
+  );
+  if (ok) await finishArac(id);
+}
+
+async function confirmReset() {
+  const ok = await showConfirm(
+    '⚠️ Vardiyayı Sıfırla',
+    'TÜM araç verileri veritabanından silinecek. Bu işlem GERİ ALINAMAZ!',
+    'Evet, Sıfırla', 'btn-danger'
+  );
+  if (ok) await resetVardiya();
+}
+
+/* ─────────────────────────────────────────
+   12. TOAST
+───────────────────────────────────────── */
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icons = { error: '⚠️', success: '✅', info: 'ℹ️' };
+  el.innerHTML = `
+    <span style="font-size:20px;">${icons[type] || 'ℹ️'}</span>
+    <div style="flex:1;">
+      <div style="font-weight:800;font-size:12.5px;color:${type==='error'?'#C0392B':type==='success'?'#1A7A3A':'#084E84'};">
+        ${type === 'error' ? 'UYARI' : type === 'success' ? 'BAŞARILI' : 'BİLGİ'}
+      </div>
+      <div style="font-size:12px;color:#6B8EAB;margin-top:2px;">${esc(msg)}</div>
+    </div>
+    <button class="toast-close" onclick="this.closest('.toast').remove()">×</button>
+  `;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 7000);
+}
+
+/* ─────────────────────────────────────────
+   13. BAĞLANTI DURUMU
+───────────────────────────────────────── */
+function setConnected(ok, errMsg = '') {
+  const dot = document.getElementById('connDot');
+  const lbl = document.getElementById('connLabel');
+  if (ok) {
+    dot.className   = 'conn-dot connected';
+    lbl.textContent = 'Supabase Realtime bağlı • arac_takip tablosu dinleniyor';
+    lbl.style.color = 'rgba(46,204,113,.7)';
+  } else {
+    dot.className   = 'conn-dot error';
+    lbl.textContent = errMsg || 'Bağlantı kesildi';
+    lbl.style.color = 'rgba(231,76,60,.8)';
+  }
+}
+
+/* ─────────────────────────────────────────
+   14. YARDIMCI
+───────────────────────────────────────── */
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ─────────────────────────────────────────
+   15. BAŞLATMA
+───────────────────────────────────────── */
+async function init() {
+  updateClock();
+  setInterval(() => {
+    updateClock();
+    // Her saniye sadece aktif tabloyu ve Gantt'ı yenile (DB'ye istek atmadan)
+    araçlar = computeSchedule(araçlar);
+    renderActive();
+    renderGantt();
+    updateTimestamp();
+  }, 1000);
+
+  // Her 30 saniyede bir DB'den yenile (Realtime fallback)
+  setInterval(() => { loadData(); }, 30000);
+
+  // Form preview dinleyicileri
+  ['f_bayi','f_damacana','f_tip','f_gelis'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateModalPreview);
+  });
+
+  // Modal backdrop tıklama
+  document.getElementById('addModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // Supabase bağlantısı
+  if (!supabase_client) {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    setConnected(false, 'Supabase bağlantısı kurulamadı');
+    return;
+  }
+
+  try {
+    await loadData();
+    subscribeRealtime();
+  } catch(e) {
+    console.error('init error:', e);
+    setConnected(false, e.message);
+  } finally {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+}
+
+// Başlat
+init();
+</script>
+
+
+</body></html>
