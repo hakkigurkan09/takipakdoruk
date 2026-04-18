@@ -11,27 +11,27 @@
 
   <style>
     :root {
-      --blue-dark:  #012B5E;
-      --blue-navy:  #014E9E;
-      --blue-main:  #007DC8;
-      --blue-light: #1AAEE8;
-      --green:      #2EA018;
-      --green-dark: #228012;
-      --orange:     #F5A800;
-      --orange-dark:#D08800;
+      --blue-dark:  #03224C;
+      --blue-navy:  #05396E;
+      --blue-main:  #0071BC;
+      --blue-light: #29ABE2;
+      --green:      #2ECC71;
+      --green-dark: #27AE60;
+      --orange:     #F39C12;
+      --orange-dark:#E67E22;
       --red:        #E74C3C;
       --red-dark:   #C0392B;
-      --bg:         #E2F2FF;
+      --bg:         #E8F2FF;
       --surface:    #FFFFFF;
-      --border:     #A8CCE8;
-      --muted:      #4A6E90;
-      --text:       #0A1C33;
+      --border:     #B8D4E8;
+      --muted:      #5A7A99;
+      --text:       #0D1E33;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: linear-gradient(135deg, #D8EDFF 0%, #E8F5FF 100%);
+      background: linear-gradient(135deg, var(--bg) 0%, #F0E6FF 100%);
       font-family: 'Barlow', sans-serif;
       min-height: 100vh;
       color: var(--text);
@@ -571,6 +571,16 @@
           <input class="form-control" id="f_sira" type="number" min="1" max="99" placeholder="otomatik">
         </div>
       </div>
+      <div class="form-row cols-2" id="f_zaman_row" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">🕐 Başlangıç Saati</label>
+          <input class="form-control" id="f_baslangic" type="time">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🕐 Bitiş Saati</label>
+          <input class="form-control" id="f_bitis" type="time">
+        </div>
+      </div>
       <div id="modalPreview" style="display:none;margin-top:8px;padding:10px;background:linear-gradient(90deg, #E8F4FF, #FFF8F0);border-radius:8px;border:2px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6;"></div>
     </div>
     <div class="modal-footer">
@@ -765,8 +775,9 @@
     <span id="lastUpdFooter">—</span>
   </div>
 
-    <div class="footer-signature">
-    <div class="design-credit">Designed by İsmail Hakkı Gürkan</div>
+  <div class="footer-signature">
+    © Yapan: <strong>İSMAİL HAKKI GÜRKAN</strong> | AKDORUK Doğal Kaynak Suyu
+    <div class="design-credit">🎨 Design by İsmail Hakkı Gürkan</div>
   </div>
 </div>
 
@@ -825,6 +836,13 @@ function timeStrToMin(str) {
   if (!str) return null;
   const parts = str.split(':');
   return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
+// Gece 00:00-11:59 arası saatleri ertesi güne ait olarak yorumlar (vardiya 17:00-02:00)
+function timeInputToMin(str) {
+  const m = timeStrToMin(str);
+  if (m === null) return null;
+  return m < 12 * 60 ? m + 24 * 60 : m;
 }
 
 function breakMins(s, e) {
@@ -921,9 +939,10 @@ function recalcStats() {
   });
 
   if (totalNet > 0) {
-    AVG_RATE = totalDok / totalNet;
+    // AVG_RATE sabit kalıyor — planlamayı etkilememesi için güncellenmez
+    const calcRate = totalDok / totalNet;
     const avgTime = totalTimes.length ? Math.round(totalTimes.reduce((a,b)=>a+b)/totalTimes.length) : 0;
-    document.getElementById('avgRate').textContent = AVG_RATE.toFixed(1);
+    document.getElementById('avgRate').textContent = calcRate.toFixed(1);
     document.getElementById('statAvgTime').textContent = avgTime > 0 ? avgTime : '—';
   }
 }
@@ -1206,7 +1225,7 @@ function renderGantt() {
       if (v.durum === 'tamamlandi') barColor = v.damacana >= 500 ? '#1A7A3A' : '#2ECC71';
       else if (now > v.bitis_dk) barColor = v.damacana >= 500 ? '#A01F1F' : '#E74C3C';
       else if (now >= v.baslangic_dk) barColor = v.damacana >= 500 ? '#003D8C' : '#0071BC';
-      else barColor = v.damacana >= 500 ? '#D08800' : '#F5A800';
+      else barColor = v.damacana >= 500 ? '#D39E16' : '#F39C12';
 
       ctx.globalAlpha = 0.15;
       ctx.fillStyle = '#000';
@@ -1225,9 +1244,7 @@ function renderGantt() {
       ctx.stroke();
 
       if (bw > 50) {
-        // Koyu renkli barlar (sarı/turuncu) için dark text, koyu renkler için beyaz
-        const isLightBar = barColor === '#F5A800' || barColor === '#D08800' || barColor === '#F39C12' || barColor === '#FFB800';
-        ctx.fillStyle = isLightBar ? '#1A2E44' : '#fff';
+        ctx.fillStyle = '#fff';
         ctx.font = 'bold 9px Barlow Condensed';
         ctx.textAlign = 'center';
         ctx.fillText(lbl(v.baslangic_dk) + '–' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 3);
@@ -1331,6 +1348,19 @@ function editArac(id) {
   document.getElementById('f_tip').value = arac.tip;
   document.getElementById('f_gelis').value = arac.gelis_saati;
   document.getElementById('f_sira').value = arac.sira;
+
+  // Tamamlanan araçlar için başlangıç/bitiş saatlerini göster
+  const zamanRow = document.getElementById('f_zaman_row');
+  if (arac.durum === 'tamamlandi') {
+    zamanRow.style.display = '';
+    document.getElementById('f_baslangic').value = arac.baslangic_dk ? lbl(arac.baslangic_dk) : '';
+    document.getElementById('f_bitis').value    = arac.gercek_bitis  ? lbl(arac.gercek_bitis)  : '';
+  } else {
+    zamanRow.style.display = 'none';
+    document.getElementById('f_baslangic').value = '';
+    document.getElementById('f_bitis').value    = '';
+  }
+
   document.getElementById('addModal').classList.add('open');
   updatePreview();
 }
@@ -1345,6 +1375,9 @@ function resetForm() {
   ['f_bayi','f_damacana','f_sira'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f_tip').value = 'Döküm';
   document.getElementById('f_gelis').value = '17:00';
+  document.getElementById('f_zaman_row').style.display = 'none';
+  document.getElementById('f_baslangic').value = '';
+  document.getElementById('f_bitis').value    = '';
   document.getElementById('modalPreview').style.display = 'none';
 }
 
@@ -1383,7 +1416,16 @@ async function saveArac() {
 
   try {
     if (editingId) {
-      await updateArac(editingId, { bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
+      const payload = { bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira };
+      // Tamamlanan araçların başlangıç/bitiş saatlerini güncelle
+      const zamanRow = document.getElementById('f_zaman_row');
+      if (zamanRow.style.display !== 'none') {
+        const baslangicStr = document.getElementById('f_baslangic').value;
+        const bitisStr     = document.getElementById('f_bitis').value;
+        if (baslangicStr) payload.baslangic_dk  = timeInputToMin(baslangicStr);
+        if (bitisStr)     payload.gercek_bitis  = timeInputToMin(bitisStr);
+      }
+      await updateArac(editingId, payload);
     } else {
       await addArac({ bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
     }
