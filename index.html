@@ -672,9 +672,9 @@
       <div class="scard-note">adet vardiya</div>
     </div>
     <div class="scard">
-      <div class="scard-label">Ortalama Süre</div>
-      <div class="scard-val cond" id="statAvgTime" style="color:var(--red);">—</div>
-      <div class="scard-note">net dakika</div>
+      <div class="scard-label">Yüklenen Damacana</div>
+      <div class="scard-val cond" id="statLiveCount" style="color:var(--orange);">—</div>
+      <div class="scard-note" id="statLiveNote">bu vardiyada</div>
     </div>
     <div class="scard">
       <div class="scard-label">Verimlilik</div>
@@ -839,6 +839,41 @@ function nowMinShift() {
   return m < 12 * 60 ? m + 24 * 60 : m;
 }
 
+// Vardiya genelinde yüklenen toplam damacana sayacı (tamamlanan + aktif araç tahmini)
+function updateLiveCounter() {
+  const nowM = nowMinShift();
+
+  // Tamamlanan araçlar — kesin değer
+  const completedDam = araçlar
+    .filter(a => a.durum === 'tamamlandi')
+    .reduce((s, a) => s + (a.damacana || 0), 0);
+
+  // Gerçek zamanlı vardiya hızı (henüz tamamlanan yoksa sabit AVG_RATE)
+  const elapsedShift = nowM - SHIFT_START;
+  const liveRate = (elapsedShift > 0 && completedDam > 0)
+    ? completedDam / elapsedShift
+    : AVG_RATE;
+
+  // Aktif yüklenen araçlar — geçen süreye göre tahmini dolum
+  const activeDam = araçlar
+    .filter(a => a.durum === 'yukluyor' && a.baslangic_dk)
+    .reduce((s, a) => {
+      const elapsed = Math.max(0, nowM - a.baslangic_dk);
+      const rate    = a.tip === 'Paletli' ? liveRate * 2 : liveRate;
+      return s + Math.min(a.damacana, Math.round(elapsed * rate));
+    }, 0);
+
+  const total = completedDam + activeDam;
+  const el    = document.getElementById('statLiveCount');
+  const note  = document.getElementById('statLiveNote');
+  if (!el) return;
+
+  el.textContent   = total > 0 ? total.toLocaleString('tr-TR') : '—';
+  note.textContent = activeDam > 0
+    ? `~${completedDam.toLocaleString('tr-TR')} ✓ + ${activeDam} aktif`
+    : `${completedDam.toLocaleString('tr-TR')} adet tamamlandı`;
+}
+
 // Vardiya başından şu ana kadar geçen süreye göre gerçek zamanlı dolum hızı
 function updateLiveRate() {
   const elapsed = Math.floor(nowMinShift() - SHIFT_START);
@@ -968,11 +1003,8 @@ function recalcStats() {
     }
   });
 
-  if (totalNet > 0) {
-    // AVG_RATE sabit kalıyor — planlamayı etkilememesi için güncellenmez
-    const avgTime = totalTimes.length ? Math.round(totalTimes.reduce((a,b)=>a+b)/totalTimes.length) : 0;
-    document.getElementById('statAvgTime').textContent = avgTime > 0 ? avgTime : '—';
-  }
+  // AVG_RATE sabit kalıyor — planlamayı etkilememesi için güncellenmez
+  // statAvgTime kaldırıldı, yerini updateLiveCounter aldı
 }
 
 async function addArac(payload) {
@@ -1032,6 +1064,7 @@ function renderAll() {
   renderGantt();
   updateTimestamp();
   updateLiveRate();
+  updateLiveCounter();
 }
 
 function renderStats() {
@@ -1551,7 +1584,7 @@ function esc(str) {
 async function init() {
   updateClock();
   setInterval(updateClock, 1000);
-  setInterval(() => { araçlar = computeSchedule(araçlar); renderActive(); renderGantt(); updateTimestamp(); updateLiveRate(); }, 1000);
+  setInterval(() => { araçlar = computeSchedule(araçlar); renderActive(); renderGantt(); updateTimestamp(); updateLiveRate(); updateLiveCounter(); }, 1000);
   setInterval(loadData, 30000);
 
   ['f_bayi','f_damacana','f_tip','f_gelis'].forEach(id => {
