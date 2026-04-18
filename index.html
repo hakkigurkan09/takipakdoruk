@@ -629,8 +629,9 @@
       </div>
       <div class="hdr-divider"></div>
       <div style="text-align:center;">
-        <div class="avg-rate-label">Net Hız</div>
+        <div class="avg-rate-label">Vardiya Hızı</div>
         <div class="avg-rate-val" id="avgRate">—</div>
+        <div id="avgRateSub" style="font-size:9px;color:rgba(255,255,255,.55);margin-top:1px;letter-spacing:.3px;">ad/dk</div>
       </div>
     </div>
   </div>
@@ -832,6 +833,35 @@ function nowMin() {
   return n.getHours() * 60 + n.getMinutes() + n.getSeconds() / 60;
 }
 
+// Gece yarısını geçen saatleri vardiya bazında yorumlar (00:00–11:59 → ertesi gün)
+function nowMinShift() {
+  const m = nowMin();
+  return m < 12 * 60 ? m + 24 * 60 : m;
+}
+
+// Vardiya başından şu ana kadar geçen süreye göre gerçek zamanlı dolum hızı
+function updateLiveRate() {
+  const elapsed = Math.floor(nowMinShift() - SHIFT_START);
+  const el      = document.getElementById('avgRate');
+  const sub     = document.getElementById('avgRateSub');
+  if (elapsed <= 0) {
+    el.textContent  = '—';
+    sub.textContent = 'vardiya başlamadı';
+    return;
+  }
+  const totalDam = araçlar
+    .filter(a => a.durum === 'tamamlandi')
+    .reduce((s, a) => s + (a.damacana || 0), 0);
+  if (totalDam === 0) {
+    el.textContent  = '—';
+    sub.textContent = `${elapsed}dk geçti · 0 ad`;
+    return;
+  }
+  const rate = totalDam / elapsed;
+  el.textContent  = rate.toFixed(2);
+  sub.textContent = `${elapsed}dk · ${totalDam.toLocaleString()} ad`;
+}
+
 function timeStrToMin(str) {
   if (!str) return null;
   const parts = str.split(':');
@@ -940,9 +970,7 @@ function recalcStats() {
 
   if (totalNet > 0) {
     // AVG_RATE sabit kalıyor — planlamayı etkilememesi için güncellenmez
-    const calcRate = totalDok / totalNet;
     const avgTime = totalTimes.length ? Math.round(totalTimes.reduce((a,b)=>a+b)/totalTimes.length) : 0;
-    document.getElementById('avgRate').textContent = calcRate.toFixed(1);
     document.getElementById('statAvgTime').textContent = avgTime > 0 ? avgTime : '—';
   }
 }
@@ -1003,6 +1031,7 @@ function renderAll() {
   renderCompleted();
   renderGantt();
   updateTimestamp();
+  updateLiveRate();
 }
 
 function renderStats() {
@@ -1118,7 +1147,10 @@ function renderCompleted() {
       <td class="hide-m" style="font-weight:600;">${net > 0 ? fmtDur(net) : '—'}</td>
       <td class="hide-m" style="color:#6B8EAB;font-size:11px;">${rate} ad/dk</td>
       <td><span class="badge b-done">✓ Tamamlandı</span></td>
-      <td><button class="btn btn-danger" style="font-size:10px;padding:5px 8px;" onclick="confirmDelete(${c.id})">🗑</button></td>`;
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-edit" style="font-size:10px;padding:5px 8px;" onclick="editArac(${c.id})">✏️</button>
+        <button class="btn btn-danger" style="font-size:10px;padding:5px 8px;" onclick="confirmDelete(${c.id})">🗑</button>
+      </td>`;
     tbody.appendChild(tr);
   });
 }
@@ -1519,7 +1551,7 @@ function esc(str) {
 async function init() {
   updateClock();
   setInterval(updateClock, 1000);
-  setInterval(() => { araçlar = computeSchedule(araçlar); renderActive(); renderGantt(); updateTimestamp(); }, 1000);
+  setInterval(() => { araçlar = computeSchedule(araçlar); renderActive(); renderGantt(); updateTimestamp(); updateLiveRate(); }, 1000);
   setInterval(loadData, 30000);
 
   ['f_bayi','f_damacana','f_tip','f_gelis'].forEach(id => {
