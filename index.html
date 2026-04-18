@@ -5,35 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Akdoruk — Lojistik Kontrol Paneli</title>
 
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
-
-  <!-- Supabase JS v2 — CDN'den yükleniyor -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
-    /* ════════════════════════════════════════════
-       DESIGN TOKENS
-    ════════════════════════════════════════════ */
     :root {
-      --blue:    #0071BC;
-      --light:   #29ABE2;
-      --dark:    #03224C;
-      --navy:    #05396E;
-      --green:   #2ECC71;
-      --amber:   #F39C12;
-      --red:     #E74C3C;
-      --bg:      #EBF4FB;
-      --surface: #FFFFFF;
-      --border:  #BDD8EF;
-      --muted:   #6B8EAB;
-      --text:    #0D1E33;
+      --blue-dark:  #03224C;
+      --blue-navy:  #05396E;
+      --blue-main:  #0071BC;
+      --blue-light: #29ABE2;
+      --green:      #2ECC71;
+      --green-dark: #27AE60;
+      --orange:     #F39C12;
+      --orange-dark:#E67E22;
+      --red:        #E74C3C;
+      --red-dark:   #C0392B;
+      --bg:         #E8F2FF;
+      --surface:    #FFFFFF;
+      --border:     #B8D4E8;
+      --muted:      #5A7A99;
+      --text:       #0D1E33;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--bg);
+      background: linear-gradient(135deg, var(--bg) 0%, #F0E6FF 100%);
       font-family: 'Barlow', sans-serif;
       min-height: 100vh;
       color: var(--text);
@@ -42,26 +40,22 @@
 
     .cond { font-family: 'Barlow Condensed', sans-serif; }
 
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #D6E9F5; }
-    ::-webkit-scrollbar-thumb { background: #A8CCE4; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, var(--blue-main), var(--green)); border-radius: 3px; }
 
-    /* ══════════════════════════════════════════
-       HEADER
-    ══════════════════════════════════════════ */
     .hdr {
-      background: linear-gradient(135deg, #03224C 0%, #05396E 55%, #0071BC 100%);
-      border-bottom: 3px solid var(--light);
-      box-shadow: 0 4px 24px rgba(0,113,188,.35);
+      background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-navy) 40%, var(--blue-main) 100%);
+      border-bottom: 4px solid var(--green);
+      box-shadow: 0 6px 30px rgba(3,34,76,.3);
       position: sticky;
       top: 0;
       z-index: 100;
     }
     .hdr-inner {
-      max-width: 1480px;
+      max-width: 1500px;
       margin: 0 auto;
-      padding: 14px 20px;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -70,299 +64,315 @@
     }
 
     .logo-wrap {
-      width: 58px; height: 58px;
-      border-radius: 10px; overflow: hidden;
+      width: 70px; height: 70px;
+      border-radius: 14px; overflow: hidden;
       background: #fff; padding: 4px;
       flex-shrink: 0;
-      box-shadow: 0 2px 12px rgba(0,0,0,.3);
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
       display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--green);
     }
-    .logo-wrap svg { width: 100%; height: 100%; }
-    .logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-wrap img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+    }
 
     .brand-title {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 26px; font-weight: 800;
-      color: #fff; letter-spacing: -.5px; line-height: 1.1;
+      font-size: 28px; font-weight: 800;
+      color: #fff; letter-spacing: -0.8px; line-height: 1;
     }
-    .brand-sub { font-size: 11.5px; color: rgba(255,255,255,.55); margin-top: 3px; }
+    .brand-sub {
+      font-size: 10px; color: rgba(255,255,255,.65); margin-top: 2px;
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
     .break-chip {
-      display: inline-flex; align-items: center; gap: 4px;
+      display: inline-flex; align-items: center; gap: 3px;
       padding: 2px 8px; border-radius: 5px;
-      background: #FFF8EC; color: #7A5000;
-      border: 1px solid #F5CC7A; font-size: 10.5px; font-weight: 600;
-    }
-    .rule-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px; border-radius: 6px;
-      background: rgba(41,171,226,.15); color: #A8DDFF;
-      border: 1px solid rgba(41,171,226,.35); font-size: 11.5px; font-weight: 700;
+      background: rgba(255,255,255,.15); color: #fff;
+      border: 1px solid rgba(255,255,255,.25); font-size: 9px; font-weight: 700;
     }
 
     .clock-display { text-align: right; }
     .clock-time {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 32px; font-weight: 700;
-      color: #29ABE2; line-height: 1;
+      font-size: 32px; font-weight: 800;
+      color: var(--green); line-height: 1;
       font-variant-numeric: tabular-nums;
+      text-shadow: 0 2px 8px rgba(0,0,0,.2);
     }
-    .clock-date { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 2px; }
+    .clock-date { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 2px; }
 
-    .hdr-divider { width: 1px; height: 44px; background: rgba(255,255,255,.15); }
+    .hdr-divider { width: 1px; height: 48px; background: rgba(255,255,255,.2); }
 
-    .avg-rate-label { font-size: 10px; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3px; }
-    .avg-rate-val { font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800; color: #2ECC71; }
-    .avg-rate-note { font-size: 10px; color: rgba(255,255,255,.35); }
+    .avg-rate-label { font-size: 9px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .1em; }
+    .avg-rate-val { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--green); }
 
-    /* ══════════════════════════════════════════
-       CONNECTION STATUS
-    ══════════════════════════════════════════ */
     .conn-bar {
-      background: rgba(3,34,76,.8);
-      border-bottom: 1px solid rgba(41,171,226,.2);
-      padding: 5px 20px;
-      font-size: 11px;
+      background: linear-gradient(90deg, var(--blue-dark), var(--blue-navy));
+      border-bottom: 2px solid var(--blue-light);
+      padding: 6px 20px;
+      font-size: 10px;
       display: flex; align-items: center; gap: 8px;
-      justify-content: flex-end;
+      justify-content: space-between;
     }
     .conn-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #F39C12;
-      transition: background .3s;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--orange);
+      transition: all .3s;
     }
-    .conn-dot.connected { background: #2ECC71; animation: pulse-green 2s infinite; }
-    .conn-dot.error { background: #E74C3C; }
+    .conn-dot.connected { background: var(--green); box-shadow: 0 0 12px var(--green); animation: pulse-green 2s infinite; }
+    .conn-dot.error { background: var(--red); }
     @keyframes pulse-green {
       0%,100% { box-shadow: 0 0 0 0 rgba(46,204,113,.5); }
-      50% { box-shadow: 0 0 0 5px rgba(46,204,113,0); }
+      50% { box-shadow: 0 0 0 8px rgba(46,204,113,0); }
     }
 
-    /* ══════════════════════════════════════════
-       STAT CARDS
-    ══════════════════════════════════════════ */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 12px;
       margin-bottom: 20px;
     }
     .scard {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 20px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 1px 8px rgba(0,113,188,.08);
-      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 2px 12px rgba(0,113,188,.1);
+      transition: all .2s;
     }
-    .scard:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,113,188,.14); }
-    .scard-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-    .scard-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 6px; }
-    .scard-val { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; color: var(--text); line-height: 1; }
-    .scard-note { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .scard:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 24px rgba(0,113,188,.16);
+      border-color: var(--blue-main);
+    }
+    .scard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue-main), var(--green));
+    }
+    .scard-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 5px; font-weight: 700; }
+    .scard-val { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; color: var(--blue-main); line-height: 1; }
+    .scard-note { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-    /* ══════════════════════════════════════════
-       GANTT CHART
-    ══════════════════════════════════════════ */
+    .search-bar {
+      display: flex; gap: 12px;
+      margin-bottom: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1; min-width: 200px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: 'Barlow', sans-serif;
+      color: var(--text);
+      background: var(--surface);
+      transition: all .2s;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 4px rgba(46,204,113,.15);
+      background: #fff;
+    }
+
     .gantt-section {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 2px 14px rgba(0,113,188,.08);
+      box-shadow: 0 4px 20px rgba(0,113,188,.1);
       margin-bottom: 20px;
     }
     .gantt-header {
-      padding: 14px 20px;
-      background: linear-gradient(90deg, #EBF4FB, #E0EFF8);
-      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      background: linear-gradient(90deg, var(--blue-light), var(--green-dark));
+      border-bottom: 2px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
     }
-    .gantt-header h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .06em; }
+    .gantt-header h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px; font-weight: 800;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      text-shadow: 0 2px 4px rgba(0,0,0,.2);
+    }
     .gantt-scroll { overflow-x: auto; position: relative; }
-    .gantt-canvas-wrap { position: relative; }
     canvas#ganttCanvas { display: block; cursor: crosshair; }
     .gantt-tooltip {
       position: absolute;
-      background: rgba(3,34,76,.95);
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-navy));
       color: #fff;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 11px;
       z-index: 100;
       pointer-events: none;
-      border: 1px solid rgba(41,171,226,.4);
-      box-shadow: 0 4px 12px rgba(0,0,0,.3);
-      max-width: 300px;
+      border: 2px solid var(--green);
+      box-shadow: 0 6px 20px rgba(0,0,0,.3);
+      max-width: 280px;
       line-height: 1.6;
       display: none;
     }
     .gantt-tooltip.show { display: block; }
     .gantt-legend {
-      padding: 10px 20px;
-      border-top: 1px solid var(--border);
-      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-      font-size: 11px; color: var(--muted);
+      padding: 12px 20px;
+      border-top: 2px solid var(--border);
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      font-size: 10px; color: var(--muted);
+      background: linear-gradient(90deg, #F8FBFF, #FFF8F0);
     }
-    .gantt-legend-item { display: flex; align-items: center; gap: 5px; }
-    .gantt-legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .gantt-legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+    .gantt-legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
 
-    /* ══════════════════════════════════════════
-       SECTION HEADERS
-    ══════════════════════════════════════════ */
     .sh {
       display: flex; align-items: center; gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      margin-top: 24px;
     }
     .sh-dot {
-      width: 10px; height: 10px;
+      width: 11px; height: 11px;
       border-radius: 50%; flex-shrink: 0;
     }
     .sh-label {
-      font-size: 11px; font-weight: 800;
+      font-size: 10px; font-weight: 800;
       text-transform: uppercase; letter-spacing: .1em;
       color: var(--muted);
     }
-    .sh-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+    .sh-line { flex: 1; height: 2px; background: linear-gradient(90deg, var(--border), transparent); }
 
-    /* ══════════════════════════════════════════
-       TABLE
-    ══════════════════════════════════════════ */
     .tbox {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
       overflow: hidden;
       box-shadow: 0 2px 14px rgba(0,113,188,.08);
       margin-bottom: 20px;
     }
     table { width: 100%; border-collapse: collapse; }
     thead th {
-      padding: 11px 14px;
+      padding: 11px 12px;
       text-align: left;
-      font-size: 10.5px; font-weight: 700;
+      font-size: 10px; font-weight: 800;
       letter-spacing: .09em; text-transform: uppercase;
-      color: var(--blue);
-      background: linear-gradient(90deg, #EBF4FB, #E0EFF8);
-      border-bottom: 2px solid var(--border);
+      color: #fff;
+      background: linear-gradient(90deg, var(--blue-main), var(--blue-light));
+      border-bottom: 3px solid var(--green);
       white-space: nowrap;
     }
     tbody td {
-      padding: 12px 14px;
-      font-size: 13px;
-      border-bottom: 1px solid #E0EFF8;
+      padding: 11px 12px;
+      font-size: 12px;
+      border-bottom: 1px solid #E8F2FF;
       vertical-align: middle;
     }
     tbody tr:last-child td { border-bottom: none; }
-    tbody td:first-child { border-left: 4px solid transparent; }
+    tbody td:first-child { border-left: 5px solid transparent; }
 
     .r-done td { background: #F0FBF4; }
-    .r-done td:first-child { border-left-color: #2ECC71; }
-
-    .r-ok td { background: #EAF4FC; }
-    .r-ok td:first-child { border-left-color: #0071BC; }
-
+    .r-done td:first-child { border-left-color: var(--green); }
+    .r-ok td { background: #E8F4FF; }
+    .r-ok td:first-child { border-left-color: var(--blue-main); }
     .r-late td { animation: lf 2s ease-in-out infinite; }
-    .r-late td:first-child { border-left-color: #E74C3C; }
+    .r-late td:first-child { border-left-color: var(--red); }
     @keyframes lf { 0%,100% { background: #FEF0EF; } 50% { background: #FDDCDA; } }
+    .r-pend td { background: #F5FAFF; opacity: .8; }
+    .r-pend td:first-child { border-left-color: var(--blue-light); }
 
-    .r-pend td { background: #F5F9FC; opacity: .75; }
-    .r-pend td:first-child { border-left-color: #B0C8DA; }
-
-    /* ══════════════════════════════════════════
-       BADGES
-    ══════════════════════════════════════════ */
     .badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 3px 10px; border-radius: 20px;
-      font-size: 11px; font-weight: 700; white-space: nowrap;
+      font-size: 10px; font-weight: 800; white-space: nowrap;
     }
-    .b-done  { background: #E8F9EE; color: #1A7A3A; border: 1px solid #A3D9B0; }
-    .b-ok    { background: #E0F0FA; color: #084E84; border: 1px solid #7CBFE0; }
-    .b-late  { background: #FEEDED; color: #8A0000; border: 1px solid #F5A0A0; }
-    .b-pend  { background: #EEF4F8; color: #5A7A99; border: 1px solid #C8DAE6; }
-    .b-pal   { background: #FFF0E0; color: #8A4200; border: 1px solid #F5C07A; }
-    .b-dkm   { background: #E0F0FA; color: #084E84; border: 1px solid #7CBFE0; }
+    .b-done  { background: #D4F8E8; color: #0B5A2E; border: 1.5px solid var(--green); }
+    .b-active { background: #D4E8FF; color: #003D8C; border: 1.5px solid var(--blue-main); }
+    .b-late  { background: #FFE0DC; color: #7A0000; border: 1.5px solid var(--red); }
+    .b-pend  { background: #E8F4FF; color: #2B5E99; border: 1.5px solid var(--blue-light); }
+    .b-pal   { background: #FFE8CC; color: #7A3E00; border: 1.5px solid var(--orange); }
+    .b-dkm   { background: #E8F4FF; color: #003D8C; border: 1.5px solid var(--blue-main); }
 
-    /* ══════════════════════════════════════════
-       DOTS & PROGRESS
-    ══════════════════════════════════════════ */
     .dot {
       display: inline-block; width: 9px; height: 9px;
       border-radius: 50%; flex-shrink: 0;
     }
-    .d-blue  { background: #0071BC; animation: pb 1.4s infinite; }
-    .d-green { background: #2ECC71; }
-    .d-red   { background: #E74C3C; animation: pr 1s infinite; }
-    .d-grey  { background: #B0C8DA; }
+    .d-blue  { background: var(--blue-main); animation: pb 1.4s infinite; }
+    .d-green { background: var(--green); }
+    .d-red   { background: var(--red); animation: pr 1s infinite; }
+    .d-grey  { background: var(--orange); }
     @keyframes pb { 0%,100% { box-shadow: 0 0 0 0 rgba(0,113,188,.5); } 50% { box-shadow: 0 0 0 5px rgba(0,113,188,0); } }
     @keyframes pr { 0%,100% { box-shadow: 0 0 0 0 rgba(231,76,60,.5); } 50% { box-shadow: 0 0 0 6px rgba(231,76,60,0); } }
 
     .prog-o {
       background: #D6E9F5; border-radius: 999px;
-      height: 7px; width: 100px; overflow: hidden; flex-shrink: 0;
+      height: 6px; width: 80px; overflow: hidden; flex-shrink: 0;
     }
     .prog-i { height: 100%; border-radius: 999px; transition: width 1s ease; }
 
-    /* ══════════════════════════════════════════
-       ACTION BUTTONS
-    ══════════════════════════════════════════ */
     .btn {
       display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 11px; border-radius: 7px;
-      font-size: 11.5px; font-weight: 700;
+      padding: 6px 12px; border-radius: 8px;
+      font-size: 11px; font-weight: 800;
       border: none; cursor: pointer;
       transition: all .18s; white-space: nowrap;
       font-family: 'Barlow', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .05em;
     }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-primary { background: var(--blue); color: #fff; }
-    .btn-primary:hover:not(:disabled) { background: #005fa3; }
-    .btn-success { background: #2ECC71; color: #fff; }
-    .btn-success:hover:not(:disabled) { background: #27ae60; }
-    .btn-danger  { background: #E74C3C; color: #fff; }
-    .btn-danger:hover:not(:disabled)  { background: #c0392b; }
-    .btn-ghost   { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-    .btn-ghost:hover:not(:disabled)   { background: #EAF4FC; color: var(--blue); border-color: var(--blue); }
-    .btn-amber   { background: #F39C12; color: #fff; }
-    .btn-amber:hover:not(:disabled)   { background: #e67e22; }
-    .btn-edit    { background: #29ABE2; color: #fff; }
-    .btn-edit:hover:not(:disabled)    { background: #0071BC; }
+    .btn-primary { background: linear-gradient(135deg, var(--blue-main), var(--blue-light)); color: #fff; box-shadow: 0 4px 12px rgba(0,113,188,.25); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,113,188,.35); }
+    .btn-success { background: linear-gradient(135deg, var(--green), var(--green-dark)); color: #fff; box-shadow: 0 4px 12px rgba(46,204,113,.25); }
+    .btn-success:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(46,204,113,.35); }
+    .btn-danger  { background: linear-gradient(135deg, var(--red), var(--red-dark)); color: #fff; box-shadow: 0 4px 12px rgba(231,76,60,.25); }
+    .btn-danger:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(231,76,60,.35); }
+    .btn-ghost   { background: transparent; color: var(--blue-main); border: 2px solid var(--border); }
+    .btn-ghost:hover:not(:disabled)   { background: #E8F4FF; border-color: var(--blue-main); }
+    .btn-amber   { background: linear-gradient(135deg, var(--orange), var(--orange-dark)); color: #fff; box-shadow: 0 4px 12px rgba(243,156,18,.25); }
+    .btn-amber:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(243,156,18,.35); }
+    .btn-edit    { background: linear-gradient(135deg, var(--blue-light), #29ABE2); color: #fff; box-shadow: 0 4px 12px rgba(41,171,226,.25); }
+    .btn-edit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(41,171,226,.35); }
+    .btn-start   { background: linear-gradient(135deg, #6C5CE7, #5749C0); color: #fff; box-shadow: 0 4px 12px rgba(108,92,231,.25); }
+    .btn-start:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(108,92,231,.35); }
 
-    /* ══════════════════════════════════════════
-       TOOLBAR
-    ══════════════════════════════════════════ */
     .toolbar {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 10px;
       margin-bottom: 18px;
     }
 
-    /* ══════════════════════════════════════════
-       MODAL
-    ══════════════════════════════════════════ */
     .modal-backdrop {
       display: none;
       position: fixed; inset: 0; z-index: 1000;
-      background: rgba(3,34,76,.65);
-      backdrop-filter: blur(4px);
+      background: rgba(3,34,76,.7);
+      backdrop-filter: blur(5px);
       align-items: center; justify-content: center;
     }
     .modal-backdrop.open { display: flex; }
     .modal {
       background: var(--surface);
       border-radius: 16px;
-      width: 100%; max-width: 460px;
+      width: 100%; max-width: 480px;
       margin: 20px;
       box-shadow: 0 24px 80px rgba(0,0,0,.3);
       animation: modal-in .25s ease;
       overflow: hidden;
+      border: 2px solid var(--border);
     }
     @keyframes modal-in { from { transform: scale(.92) translateY(20px); opacity: 0; } }
     .modal-header {
       padding: 20px 24px 16px;
-      background: linear-gradient(135deg, #03224C, #0071BC);
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
       display: flex; align-items: center; justify-content: space-between;
     }
     .modal-header h2 {
@@ -373,47 +383,43 @@
     .modal-close {
       background: rgba(255,255,255,.15);
       border: none; color: #fff;
-      width: 30px; height: 30px; border-radius: 8px;
-      font-size: 18px; cursor: pointer; line-height: 1;
+      width: 32px; height: 32px; border-radius: 10px;
+      font-size: 20px; cursor: pointer; line-height: 1;
       display: flex; align-items: center; justify-content: center;
-      transition: background .15s;
+      transition: all .15s;
     }
-    .modal-close:hover { background: rgba(255,255,255,.25); }
-    .modal-body { padding: 24px; }
-
+    .modal-close:hover { background: rgba(255,255,255,.25); transform: rotate(90deg); }
+    .modal-body { padding: 20px; }
     .form-row {
-      display: grid; gap: 14px;
-      margin-bottom: 14px;
+      display: grid; gap: 12px;
+      margin-bottom: 12px;
     }
     .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-label { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
     .form-control {
-      padding: 10px 13px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 13.5px; font-weight: 500;
+      padding: 9px 12px;
+      border: 2px solid var(--border);
+      border-radius: 9px;
+      font-size: 13px; font-weight: 500;
       font-family: 'Barlow', sans-serif;
       color: var(--text);
       background: var(--bg);
-      transition: border-color .15s, box-shadow .15s;
+      transition: all .2s;
       outline: none;
     }
     .form-control:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(0,113,188,.15);
+      border-color: var(--blue-main);
+      box-shadow: 0 0 0 4px rgba(0,113,188,.15);
       background: #fff;
     }
     .modal-footer {
-      padding: 16px 24px 20px;
+      padding: 14px 20px 18px;
       display: flex; justify-content: flex-end; gap: 10px;
-      border-top: 1px solid var(--border);
-      background: #F5F9FC;
+      border-top: 2px solid var(--border);
+      background: linear-gradient(90deg, #F8FBFF, #FFF8F0);
     }
 
-    /* ══════════════════════════════════════════
-       TOAST / ALERT
-    ══════════════════════════════════════════ */
     .toast-container {
       position: fixed; top: 16px; right: 16px;
       z-index: 9999;
@@ -421,48 +427,44 @@
     }
     .toast {
       background: var(--surface);
-      border: 2px solid #E74C3C;
-      border-radius: 10px;
-      padding: 12px 16px;
-      max-width: 340px;
-      box-shadow: 0 6px 30px rgba(0,0,0,.15);
+      border: 3px solid var(--red);
+      border-radius: 12px;
+      padding: 12px 14px;
+      max-width: 320px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
       animation: toast-in .3s ease;
       display: flex; align-items: flex-start; gap: 10px;
+      font-size: 12px;
     }
-    .toast.success { border-color: #2ECC71; }
-    .toast.info    { border-color: #0071BC; }
+    .toast.success { border-color: var(--green); }
+    .toast.info    { border-color: var(--blue-main); }
     @keyframes toast-in { from { transform: translateX(120%); opacity: 0; } }
     .toast-close {
       background: none; border: none; cursor: pointer;
       color: var(--muted); font-size: 18px; line-height: 1;
       margin-left: auto; flex-shrink: 0;
-      padding: 0 0 0 8px;
+      padding: 0;
     }
 
-    /* ══════════════════════════════════════════
-       EMPTY STATE
-    ══════════════════════════════════════════ */
     .empty-state {
-      text-align: center; padding: 48px 20px;
+      text-align: center; padding: 40px 20px;
       color: var(--muted);
     }
     .empty-state svg { margin-bottom: 12px; opacity: .4; }
-    .empty-state p { font-size: 14px; }
+    .empty-state p { font-size: 13px; }
 
-    /* ══════════════════════════════════════════
-       LOADING OVERLAY
-    ══════════════════════════════════════════ */
     .loading-overlay {
       position: fixed; inset: 0; z-index: 2000;
-      background: rgba(3,34,76,.85);
+      background: linear-gradient(135deg, rgba(3,34,76,.9), rgba(5,57,110,.9));
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       color: #fff;
     }
     .loading-spinner {
-      width: 48px; height: 48px;
+      width: 52px; height: 52px;
       border: 4px solid rgba(255,255,255,.2);
-      border-top-color: #29ABE2;
+      border-top-color: var(--green);
+      border-right-color: var(--green);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin-bottom: 16px;
@@ -470,54 +472,55 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-overlay.hidden { display: none; }
 
-    /* ══════════════════════════════════════════
-       FOOTER NOTE
-    ══════════════════════════════════════════ */
     .footer-note {
-      font-size: 11px; color: var(--muted);
+      font-size: 10px; color: var(--muted);
       display: flex; justify-content: space-between;
       flex-wrap: wrap; gap: 6px;
-      margin-top: 4px; margin-bottom: 40px;
+      margin-top: 4px; margin-bottom: 30px;
     }
     .footer-signature {
-      font-size: 12px; color: var(--muted);
+      font-size: 11px; color: var(--muted);
       text-align: center;
-      padding: 20px;
-      border-top: 1px solid var(--border);
-      margin-top: 40px;
+      padding: 18px;
+      border-top: 2px solid var(--border);
+      margin-top: 30px;
+      background: linear-gradient(90deg, #F8FBFF, #FFF8F0);
+      border-radius: 0 0 14px 14px;
     }
-    .footer-signature strong { color: var(--text); font-weight: 700; }
-
-    /* ══════════════════════════════════════════
-       RESPONSIVE
-    ══════════════════════════════════════════ */
-    @media (max-width: 768px) {
-      thead th, tbody td { padding: 9px 8px; font-size: 11.5px; }
-      .hide-m { display: none !important; }
-      .prog-o { width: 70px; }
-      .form-row.cols-2 { grid-template-columns: 1fr; }
+    .footer-signature strong { color: var(--text); font-weight: 800; }
+    .footer-signature .design-credit {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #7A9CC6;
+      font-style: italic;
     }
 
-    /* ══════════════════════════════════════════
-       CONFIRM DIALOG
-    ══════════════════════════════════════════ */
     .confirm-overlay {
       display: none;
       position: fixed; inset: 0; z-index: 1100;
       background: rgba(3,34,76,.7);
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(5px);
       align-items: center; justify-content: center;
     }
     .confirm-overlay.open { display: flex; }
     .confirm-box {
-      background: var(--surface); border-radius: 14px;
-      padding: 28px 28px 20px; max-width: 380px; width: 100%; margin: 20px;
+      background: var(--surface); border-radius: 16px;
+      padding: 26px; max-width: 380px; width: 100%; margin: 20px;
       box-shadow: 0 20px 60px rgba(0,0,0,.25);
       animation: modal-in .2s ease;
+      border: 2px solid var(--border);
     }
-    .confirm-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .confirm-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
     .confirm-msg { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
     .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+    @media (max-width: 768px) {
+      thead th, tbody td { padding: 8px 6px; font-size: 11px; }
+      .hide-m { display: none !important; }
+      .prog-o { width: 60px; }
+      .form-row.cols-2 { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+    }
   </style>
 </head>
 <body>
@@ -568,7 +571,7 @@
           <input class="form-control" id="f_sira" type="number" min="1" max="99" placeholder="otomatik">
         </div>
       </div>
-      <div id="modalPreview" style="display:none;margin-top:4px;padding:12px;background:#EBF4FB;border-radius:8px;border:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7;"></div>
+      <div id="modalPreview" style="display:none;margin-top:8px;padding:10px;background:linear-gradient(90deg, #E8F4FF, #FFF8F0);border-radius:8px;border:2px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">İptal</button>
@@ -593,40 +596,31 @@
 <header class="hdr">
   <div class="hdr-inner">
     <!-- Logo + Brand -->
-    <div style="display:flex;align-items:center;gap:14px;">
-      <div class="logo-wrap" id="logoWrap">
-        <!-- SVG Placeholder Logo -->
-        <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="54" height="54" rx="8" fill="#03224C"></rect>
-          <text x="27" y="34" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="800" font-size="16" fill="#29ABE2">AK</text>
-          <line x1="10" y1="38" x2="44" y2="38" stroke="#0071BC" stroke-width="2"></line>
-        </svg>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="logo-wrap">
+        <img id="mainLogo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='20' fill='%2303224C'/%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%232ECC71;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%230071BC;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='100' cy='80' r='40' fill='url(%23g1)' opacity='0.9'/%3E%3Ccircle cx='100' cy='100' r='35' fill='%230071BC'/%3E%3Cpath d='M70 100 Q100 75 130 100' fill='%232ECC71' opacity='0.8'/%3E%3Ccircle cx='100' cy='100' r='10' fill='%23F39C12'/%3E%3C/svg%3E" alt="AKDORUK">
       </div>
       <div>
-        <div class="brand-title">
-          AKDORUK <span style="color:#29ABE2;font-size:17px;font-weight:600;">Doğal Kaynak Suyu</span>
-        </div>
-        <div class="brand-sub" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px;">
-          <span>Araç Dolum &amp; Sevkiyat Takip — Vardiya 17:00–02:00</span>
-          <span class="break-chip">☕ Çay: 19:00–19:15</span>
-          <span class="break-chip">🍽 Yemek: 21:00–22:00</span>
-          <span class="break-chip">☕ Çay: 00:00–00:15</span>
+        <div class="brand-title">AKDORUK</div>
+        <div class="brand-sub">
+          <span>Araç Takip — 17:00–02:00</span>
+          <span class="break-chip">☕ 19:00–19:15</span>
+          <span class="break-chip">🍽 21:00–22:00</span>
+          <span class="break-chip">☕ 00:00–00:15</span>
         </div>
       </div>
     </div>
     <!-- Right -->
-    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-      <div class="rule-chip">⏱ Kural: +10 dk geç bitir</div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <div class="hdr-divider"></div>
       <div class="clock-display">
-        <div class="clock-time" id="liveClock">03:08:49</div>
-        <div class="clock-date" id="liveDate">Cum 17 Nis 2026</div>
+        <div class="clock-time" id="liveClock">17:00:00</div>
+        <div class="clock-date" id="liveDate">Cum 17 Nis</div>
       </div>
       <div class="hdr-divider"></div>
       <div style="text-align:center;">
-        <div class="avg-rate-label">Net Ort. Hız</div>
+        <div class="avg-rate-label">Net Hız</div>
         <div class="avg-rate-val" id="avgRate">—</div>
-        <div class="avg-rate-note">(mola hariç)</div>
       </div>
     </div>
   </div>
@@ -634,116 +628,83 @@
 
 <!-- ══ CONNECTION BAR ══ -->
 <div class="conn-bar">
-  <div class="conn-dot connected" id="connDot"></div>
-  <span id="connLabel" style="color: rgba(46, 204, 113, 0.7);">Supabase Realtime bağlı • arac_takip tablosu dinleniyor</span>
-  <span style="color:rgba(255,255,255,.25);">|</span>
-  <span id="lastUpd" style="color:rgba(255,255,255,.35);">Son güncelleme: 03:08:49</span>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="conn-dot connected" id="connDot"></div>
+    <span id="connLabel" style="color: rgba(46, 204, 113, 0.85);">Supabase bağlı</span>
+  </div>
+  <span id="lastUpd" style="color:rgba(255,255,255,.6);font-size:9px;">Son: —</span>
 </div>
 
 <!-- ══ MAIN CONTENT ══ -->
-<div style="max-width:1480px;margin:0 auto;padding:20px 20px 0;">
+<div style="max-width:1500px;margin:0 auto;padding:18px 20px 0;">
 
   <!-- STATS -->
   <div class="stats-grid">
     <div class="scard">
-      <div class="scard-bar" style="background:linear-gradient(90deg,#0071BC,#29ABE2);"></div>
       <div class="scard-label">Toplam Araç</div>
-      <div class="scard-val cond" id="statTotal">—</div>
-      <div class="scard-note">Bu vardiyada</div>
+      <div class="scard-val cond" id="statTotal">0</div>
+      <div class="scard-note">bu vardiyada</div>
     </div>
     <div class="scard">
-      <div class="scard-bar" style="background:linear-gradient(90deg,#2ECC71,#27AE60);"></div>
       <div class="scard-label">Tamamlanan</div>
-      <div class="scard-val cond" id="statDone" style="color:#2ECC71;">—</div>
-      <div class="scard-note">Çıkış yapıldı</div>
+      <div class="scard-val cond" id="statDone" style="color:var(--green);">0</div>
+      <div class="scard-note">çıkış yapıldı</div>
     </div>
     <div class="scard">
-      <div class="scard-bar" style="background:linear-gradient(90deg,#0071BC,#29ABE2);"></div>
-      <div class="scard-label">Aktif / Bekleyen</div>
-      <div class="scard-val cond" id="statActive" style="color:#0071BC;">—</div>
-      <div class="scard-note">Yükleme sürüyor</div>
+      <div class="scard-label">Yükleniyor</div>
+      <div class="scard-val cond" id="statActive" style="color:#6C5CE7;">0</div>
+      <div class="scard-note">işlemde</div>
     </div>
     <div class="scard">
-      <div class="scard-bar" style="background:linear-gradient(90deg,#F39C12,#E67E22);"></div>
-      <div class="scard-label">Toplam Damacana</div>
-      <div class="scard-val cond" id="statDamacana" style="color:#F39C12;">—</div>
-      <div class="scard-note">Vardiya toplamı</div>
+      <div class="scard-label">Total Damacana</div>
+      <div class="scard-val cond" id="statDamacana" style="color:var(--orange);">0</div>
+      <div class="scard-note">adet vardiya</div>
     </div>
     <div class="scard">
-      <div class="scard-bar" style="background:linear-gradient(90deg,#E74C3C,#C0392B);"></div>
-      <div class="scard-label">Gecikme</div>
-      <div class="scard-val cond" id="statLate" style="color:#E74C3C;">0</div>
-      <div class="scard-note">Süre aşımı (+10dk)</div>
+      <div class="scard-label">Ortalama Süre</div>
+      <div class="scard-val cond" id="statAvgTime" style="color:var(--red);">—</div>
+      <div class="scard-note">net dakika</div>
     </div>
+    <div class="scard">
+      <div class="scard-label">Verimlilik</div>
+      <div class="scard-val cond" id="statEff" style="color:var(--blue-light);">—%</div>
+      <div class="scard-note">zamanında</div>
+    </div>
+  </div>
+
+  <!-- SEARCH & TOOLBAR -->
+  <div class="search-bar">
+    <input class="search-input" id="searchInput" type="text" placeholder="🔍 Bayi adına göre ara…" onkeyup="filterTable()">
+    <button class="btn btn-primary" onclick="openModal()">➕ Araç Ekle</button>
+    <button class="btn btn-amber" onclick="exportPDF()">📄 PDF İndir</button>
+    <button class="btn btn-danger" onclick="confirmReset()">🔄 Sıfırla</button>
   </div>
 
   <!-- GANTT CHART -->
   <div class="gantt-section">
     <div class="gantt-header">
-      <h3>📊 Dolum Zaman Çizelgesi (Gantt)</h3>
-      <span style="font-size:11px;color:var(--muted);">Gerçek zamanlı • Mola hariç hesaplandı</span>
+      <h3>📊 Gantt Zaman Çizelgesi (Mola Hariç)</h3>
+      <span style="font-size:10px;color:#fff;opacity:.9;">Gerçek zamanlı takip</span>
     </div>
     <div class="gantt-scroll">
-      <div class="gantt-canvas-wrap" id="ganttWrap">
-        <canvas id="ganttCanvas" width="1438" height="80"></canvas>
+      <div style="position:relative;min-height:400px;" id="ganttWrap">
+        <canvas id="ganttCanvas" width="1438" height="400"></canvas>
         <div class="gantt-tooltip" id="ganttTooltip"></div>
       </div>
     </div>
     <div class="gantt-legend">
-      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#2ECC71;"></div> Tamamlandı</div>
-      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#0071BC;"></div> Yükleniyor</div>
-      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#E74C3C;"></div> Gecikiyor</div>
-      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#B0C8DA;"></div> Bekliyor</div>
-      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#FFF0E0;border:1px solid #F5CC7A;"></div> Mola Dönemi</div>
-      <span style="margin-left:auto;">▶ Şu anki zaman çizgisi</span>
-    </div>
-  </div>
-
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="openModal()">➕ Araç Ekle</button>
-      <button class="btn btn-amber" onclick="confirmReset()">🔄 Vardiyayı Sıfırla</button>
-    </div>
-    <div style="font-size:11.5px;color:var(--muted);">
-      <span id="shiftInfo">—</span>
-    </div>
-  </div>
-
-  <!-- SECTION: TAMAMLANAN -->
-  <div class="sh" id="shComp" style="display:none;">
-    <div class="sh-dot" style="background:#2ECC71;box-shadow:0 0 8px #2ECC71;"></div>
-    <span class="sh-label">Tamamlanan Araçlar</span>
-    <div class="sh-line"></div>
-  </div>
-
-  <div class="tbox" id="tboxComp" style="display:none;margin-bottom:20px;">
-    <div style="overflow-x:auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Bayi / Firma</th>
-            <th>Tip</th>
-            <th>Damacana</th>
-            <th>Başlangıç</th>
-            <th>Bitiş (Gerçek)</th>
-            <th class="hide-m">Brüt Süre</th>
-            <th class="hide-m">Mola Kesintisi</th>
-            <th class="hide-m">Net Hız</th>
-            <th>Durum</th>
-            <th>İşlem</th>
-          </tr>
-        </thead>
-        <tbody id="tbComp"></tbody>
-      </table>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--green);"></div> <strong>Tamamlandı</strong></div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--blue-main);"></div> <strong>Yükleniyor</strong></div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--red);"></div> <strong>Gecikiyor</strong></div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:var(--orange);"></div> <strong>Bekliyor</strong></div>
+      <div style="margin-left:auto;font-size:10px;font-weight:700;">▶ ŞUAN</div>
     </div>
   </div>
 
   <!-- SECTION: AKTİF & PLANLANAN -->
   <div class="sh">
-    <div class="sh-dot" style="background:#0071BC;box-shadow:0 0 8px rgba(0,113,188,.6);animation:pb 1.4s infinite;"></div>
-    <span class="sh-label">Aktif &amp; Planlanan Araçlar</span>
+    <div class="sh-dot" style="background:#6C5CE7;box-shadow:0 0 12px rgba(108,92,231,.6);"></div>
+    <span class="sh-label">Aktif & Planlanan Araçlar</span>
     <div class="sh-line"></div>
   </div>
 
@@ -757,68 +718,89 @@
             <th>Tip</th>
             <th>Damacana</th>
             <th>Başlangıç</th>
-            <th>Beklenen Bitiş <small style="font-weight:400;opacity:.7;">(net+10dk)</small></th>
-            <th class="hide-m">Kalan / Geçen</th>
+            <th>Beklenen Bitiş</th>
+            <th class="hide-m">Kalan</th>
             <th class="hide-m">İlerleme</th>
             <th>Durum</th>
             <th>İşlem</th>
           </tr>
         </thead>
-        <tbody id="tbActive"><tr><td colspan="10"><div class="empty-state"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#B0C8DA" stroke-width="1.5"></circle><path d="M8 12h8M12 8v8" stroke="#B0C8DA" stroke-width="1.5" stroke-linecap="round"></path></svg><p>Aktif araç yok. "Araç Ekle" ile yeni araç ekleyin.</p></div></td></tr></tbody>
+        <tbody id="tbActive"><tr><td colspan="10"><div class="empty-state"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#B0C8DA" stroke-width="1.5"></circle><path d="M8 12h8M12 8v8" stroke="#B0C8DA" stroke-width="1.5" stroke-linecap="round"></path></svg><p>Araç eklenmemiş. "Araç Ekle" ile başlayın.</p></div></td></tr></tbody>
       </table>
     </div>
   </div>
 
-  <!-- FOOTER NOTE -->
-  <div class="footer-note">
-    <span>* Net hız mola süreleri düşülerek hesaplanmıştır (☕ 15dk + 🍽 60dk + ☕ 15dk) | Paletli yükleme 2× hız | Beklenen bitiş = hesaplanan süre + 10dk kural</span>
-    <span id="lastUpdFooter">Son güncelleme: 03:08:49</span>
+  <!-- SECTION: TAMAMLANAN -->
+  <div class="sh" id="shComp" style="display:none;">
+    <div class="sh-dot" style="background:var(--green);box-shadow:0 0 12px var(--green);"></div>
+    <span class="sh-label">Tamamlanan Araçlar</span>
+    <div class="sh-line"></div>
   </div>
 
-  <!-- FOOTER SIGNATURE -->
+  <div class="tbox" id="tboxComp" style="display:none;margin-bottom:10px;">
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Bayi / Firma</th>
+            <th>Tip</th>
+            <th>Damacana</th>
+            <th>Başlangıç</th>
+            <th>Bitiş (Gerçek)</th>
+            <th class="hide-m">Net Süre</th>
+            <th class="hide-m">Hız</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="tbComp"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-note">
+    <span>* Net hız: mola süresi düşülerek hesaplandı | Paletli: 2× hız | Damacana: 500+ koyu, <500 açık renkle gösterilir</span>
+    <span id="lastUpdFooter">—</span>
+  </div>
+
   <div class="footer-signature">
-    © Yapan: <strong>İSMAİL HAKKI GÜRKAN</strong> | AKDORUK Doğal Kaynak Suyu — Akıllı Lojistik Takip Sistemi
+    © Yapan: <strong>İSMAİL HAKKI GÜRKAN</strong> | AKDORUK Doğal Kaynak Suyu
+    <div class="design-credit">🎨 Design by İsmail Hakkı Gürkan</div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     JAVASCRIPT — TÜM MANTIK
-══════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
 <script>
 'use strict';
 
-/* ─────────────────────────────────────────
-   1. SUPABASE BAĞLANTISI (CDN'DEN YÜKLÜ)
-───────────────────────────────────────── */
 const SUPABASE_URL = 'https://uovcmvixkwodvccchagv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_vMiZJPzLxuf6jgxtut1pow_fS64b6BX';
 
 let supabase_client;
 try {
   supabase_client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  console.log('✅ Supabase başarıyla yüklendi');
 } catch(e) {
-  console.error('❌ Supabase init error:', e);
+  console.error('Supabase error:', e);
 }
 
-/* ─────────────────────────────────────────
-   2. SABITLER
-───────────────────────────────────────── */
 const SHIFT_START = toMin(17, 0);
 const SHIFT_END   = toMin(26, 0);
 const EXTRA_MIN   = 10;
 
 const BREAKS = [
-  { label: '☕ Çay',  start: toMin(19,  0), end: toMin(19, 15), color: '#FFF8EC' },
+  { label: '☕ Çay',  start: toMin(19,  0), end: toMin(19, 15), color: '#FFE8CC' },
   { label: '🍽 Yemek', start: toMin(21,  0), end: toMin(22,  0), color: '#FFF0E0' },
-  { label: '☕ Çay',  start: toMin(0,  0), end: toMin(0, 15), color: '#FFF8EC' },
+  { label: '☕ Çay',  start: toMin(0,  0), end: toMin(0, 15), color: '#FFE8CC' },
 ];
 
 let AVG_RATE = 8.5;
+let araçlar = [];
+let editingId = null;
+let ganttData = [];
+let searchFilter = '';
 
-/* ─────────────────────────────────────────
-   3. YARDIMCI FONKSİYONLAR
-───────────────────────────────────────── */
 function toMin(h, m) { return h * 60 + m; }
 
 function lbl(min) {
@@ -879,12 +861,8 @@ function calcEnd(startMin, netNeeded) {
   return cursor;
 }
 
-/* ─────────────────────────────────────────
-   4. ZİNCİRLEME PLANLAMA MOTORU
-───────────────────────────────────────── */
 function computeSchedule(araçlar) {
   const sorted = [...araçlar].sort((a, b) => a.sira - b.sira);
-
   let cursor = SHIFT_START;
 
   sorted.forEach(v => {
@@ -896,10 +874,8 @@ function computeSchedule(araçlar) {
 
     const gelisMin = timeStrToMin(v.gelis_saati) || SHIFT_START;
     const start = Math.max(cursor, gelisMin);
-
     const isPal = v.tip === 'Paletli';
     const netNeeded = Math.ceil(v.damacana / (isPal ? AVG_RATE * 2 : AVG_RATE));
-
     const netEnd = calcEnd(start, netNeeded);
     const dispEnd = netEnd + EXTRA_MIN;
 
@@ -914,48 +890,42 @@ function computeSchedule(araçlar) {
   return sorted;
 }
 
-/* ─────────────────────────────────────────
-   5. VERİ KATMANI
-───────────────────────────────────────── */
-let araçlar = [];
-let realtime_channel = null;
-let editingId = null;
-
 async function loadData() {
   try {
-    const { data, error } = await supabase_client
-      .from('arac_takip')
-      .select('*')
-      .order('sira', { ascending: true })
-      .order('created_at', { ascending: true });
-
+    const { data, error } = await supabase_client.from('arac_takip').select('*').order('sira', { ascending: true });
     if (error) throw error;
     araçlar = data || [];
-    recalcAvgRate();
+    recalcStats();
     araçlar = computeSchedule(araçlar);
     renderAll();
     setConnected(true);
   } catch(err) {
-    console.error('loadData error:', err);
-    setConnected(false, err.message || 'Bağlantı hatası');
+    console.error('Load error:', err);
+    setConnected(false);
   }
 }
 
-function recalcAvgRate() {
+function recalcStats() {
   const done = araçlar.filter(a => a.durum === 'tamamlandi' && a.gercek_bitis && a.baslangic_dk);
   if (done.length === 0) return;
 
-  let totalDok = 0, totalNet = 0;
+  let totalDok = 0, totalNet = 0, totalTimes = [];
   done.forEach(d => {
     const gross = d.gercek_bitis - d.baslangic_dk;
     const mola  = breakMins(d.baslangic_dk, d.gercek_bitis);
     const net   = gross - mola;
-    if (net > 0) { totalDok += d.damacana; totalNet += net; }
+    if (net > 0) {
+      totalDok += d.damacana;
+      totalNet += net;
+      totalTimes.push(net);
+    }
   });
 
   if (totalNet > 0) {
     AVG_RATE = totalDok / totalNet;
-    document.getElementById('avgRate').textContent = AVG_RATE.toFixed(2) + ' ad/dk';
+    const avgTime = totalTimes.length ? Math.round(totalTimes.reduce((a,b)=>a+b)/totalTimes.length) : 0;
+    document.getElementById('avgRate').textContent = AVG_RATE.toFixed(1);
+    document.getElementById('statAvgTime').textContent = avgTime > 0 ? avgTime : '—';
   }
 }
 
@@ -964,38 +934,33 @@ async function addArac(payload) {
     payload.sira = (araçlar.length > 0) ? Math.max(...araçlar.map(a => a.sira)) + 1 : 1;
   }
   payload.durum = 'bekliyor';
-
   const { error } = await supabase_client.from('arac_takip').insert([payload]);
   if (error) throw error;
-  showToast('Araç başarıyla eklendi!', 'success');
+  showToast('✅ Araç eklendi!', 'success');
   await loadData();
 }
 
 async function updateArac(id, payload) {
-  const { error } = await supabase_client
-    .from('arac_takip')
-    .update(payload)
-    .eq('id', id);
+  const { error } = await supabase_client.from('arac_takip').update(payload).eq('id', id);
   if (error) throw error;
-  showToast('Araç başarıyla güncellendi!', 'success');
+  showToast('✅ Güncellendi!', 'success');
   await loadData();
 }
 
 async function finishArac(id) {
   const now = Math.round(nowMin());
-  const { error } = await supabase_client
-    .from('arac_takip')
-    .update({ durum: 'tamamlandi', gercek_bitis: now })
-    .eq('id', id);
-  if (error) throw error;
-  showToast('Yükleme tamamlandı olarak işaretlendi.', 'success');
-  await loadData();
+  await updateArac(id, { durum: 'tamamlandi', gercek_bitis: now });
+}
+
+async function startArac(id) {
+  const now = Math.round(nowMin());
+  await updateArac(id, { durum: 'yukluyor', baslangic_dk: now });
 }
 
 async function deleteArac(id) {
   const { error } = await supabase_client.from('arac_takip').delete().eq('id', id);
   if (error) throw error;
-  showToast('Araç silindi.', 'info');
+  showToast('🗑 Araç silindi.', 'info');
   await loadData();
 }
 
@@ -1005,55 +970,19 @@ async function resetVardiya() {
   araçlar = [];
   AVG_RATE = 8.5;
   renderAll();
-  showToast('Vardiya sıfırlandı. Tüm veriler temizlendi.', 'info');
+  showToast('🔄 Vardiya sıfırlandı!', 'info');
   setConnected(true);
 }
 
-/* ─────────────────────────────────────────
-   6. REALTIME SUBSCRIPTION
-───────────────────────────────────────── */
 function subscribeRealtime() {
   if (!supabase_client) return;
-
-  realtime_channel = supabase_client
-    .channel('arac_takip_changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'arac_takip' }, () => {
-      loadData();
-    })
-    .subscribe(status => {
-      if (status === 'SUBSCRIBED') {
-        setConnected(true);
-      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        setConnected(false, 'Realtime bağlantısı kesildi');
-      }
-    });
-}
-
-/* ─────────────────────────────────────────
-   7. RENDER FONKSIYONLARI
-───────────────────────────────────────── */
-let alertShown = {};
-let audioCtx = null;
-let ganttData = [];
-
-function beep() {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    o.frequency.setValueAtTime(900, audioCtx.currentTime);
-    o.frequency.setValueAtTime(620, audioCtx.currentTime + .18);
-    o.frequency.setValueAtTime(900, audioCtx.currentTime + .36);
-    g.gain.setValueAtTime(.3, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + .6);
-    o.start(); o.stop(audioCtx.currentTime + .6);
-  } catch(e) {}
+  supabase_client.channel('arac_takip_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'arac_takip' }, () => { loadData(); }).subscribe(status => { if (status === 'SUBSCRIBED') setConnected(true); });
 }
 
 function renderAll() {
   renderStats();
-  renderCompleted();
   renderActive();
+  renderCompleted();
   renderGantt();
   updateTimestamp();
 }
@@ -1062,24 +991,80 @@ function renderStats() {
   const total   = araçlar.length;
   const done    = araçlar.filter(a => a.durum === 'tamamlandi').length;
   const active  = araçlar.filter(a => a.durum === 'yukluyor').length;
-  const pend    = araçlar.filter(a => a.durum === 'bekliyor').length;
+  const totalDk = araçlar.reduce((s, a) => s + (a.damacana || 0), 0);
   const now     = nowMin();
   const late    = araçlar.filter(a => a.durum !== 'tamamlandi' && a.bitis_dk && now > a.bitis_dk).length;
-  const totalDk = araçlar.reduce((s, a) => s + (a.damacana || 0), 0);
+  const onTime  = done > 0 ? Math.round(((done - late) / done) * 100) : 0;
 
   document.getElementById('statTotal').textContent    = total;
   document.getElementById('statDone').textContent     = done;
-  document.getElementById('statActive').textContent   = active + pend;
+  document.getElementById('statActive').textContent   = active;
   document.getElementById('statDamacana').textContent = totalDk.toLocaleString('tr');
+  document.getElementById('statEff').textContent      = onTime + '%';
+}
 
-  const lateEl = document.getElementById('statLate');
-  lateEl.textContent  = late;
-  lateEl.style.color  = late > 0 ? '#E74C3C' : '#2ECC71';
+function renderActive() {
+  const tbody = document.getElementById('tbActive');
+  tbody.innerHTML = '';
 
-  const endFull  = araçlar.filter(a => a.bitis_dk).map(a => a.bitis_dk);
-  const lastEnd  = endFull.length > 0 ? Math.max(...endFull) : null;
-  document.getElementById('shiftInfo').textContent =
-    lastEnd ? `Tahmini vardiya bitişi: ${lbl(lastEnd)}` : 'Henüz araç eklenmedi';
+  const pending = araçlar.filter(a => a.durum !== 'tamamlandi').sort((a, b) => a.sira - b.sira);
+  const filtered = pending.filter(a => !searchFilter || a.bayi_adi.toLowerCase().includes(searchFilter.toLowerCase()));
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><p>${searchFilter ? '⚠️ Sonuç yok' : '✅ Tüm araçlar tamamlandı'}</p></div></td></tr>`;
+    return;
+  }
+
+  const now = nowMin();
+  filtered.forEach(v => {
+    const started  = v.baslangic_dk !== null && now >= v.baslangic_dk;
+    const overdue  = v.bitis_dk && now > v.bitis_dk;
+    const remaining = v.bitis_dk ? v.bitis_dk - now : 0;
+    const span     = v.bitis_dk && v.baslangic_dk ? v.bitis_dk - v.baslangic_dk : 1;
+    const elapsed  = started ? Math.min(now - (v.baslangic_dk || now), span) : 0;
+    const pct      = started ? Math.min(elapsed / span * 100, 100) : 0;
+    const molaDk   = v.baslangic_dk && v.bitis_dk ? breakMins(v.baslangic_dk, v.bitis_dk) : 0;
+    const netDk    = v._netNeeded || 0;
+
+    let rowCls, badge, statusTxt, dotCls, progColor;
+
+    if (v.durum === 'bekliyor') {
+      rowCls = 'r-pend'; dotCls = 'd-grey'; progColor = '#F39C12';
+      badge = `<span class="badge b-pend">⋯ Bekleniyor</span>`;
+      statusTxt = `<span style="color:#6B8EAB;font-size:11px;">${v.baslangic_dk ? lbl(v.baslangic_dk)+"'de" : 'Zamanı gelince'}</span>`;
+    } else if (overdue) {
+      const over = Math.ceil(now - v.bitis_dk);
+      rowCls = 'r-late'; dotCls = 'd-red'; progColor = '#E74C3C';
+      badge = `<span class="badge b-late">🚨 Gecikiyor</span>`;
+      statusTxt = `<span style="color:#E74C3C;font-weight:700;">+${fmtDur(over)}</span>`;
+    } else {
+      rowCls = 'r-ok'; dotCls = 'd-blue'; progColor = '#0071BC';
+      badge = `<span class="badge b-active">▶ Yükleniyor</span>`;
+      statusTxt = `<span style="color:#0071BC;font-weight:600;">${fmtDur(remaining)}</span>`;
+    }
+
+    const molaTxt = molaDk > 0 ? `<div style="font-size:9px;color:#F39C12;margin-top:1px;">+${molaDk}dk mola</div>` : '';
+
+    const tr = document.createElement('tr');
+    tr.className = rowCls;
+    tr.innerHTML = `
+      <td class="cond" style="color:#6B8EAB;font-size:12px;font-weight:800;">#${v.sira}</td>
+      <td><div style="font-weight:700;font-size:12px;">${esc(v.bayi_adi)}</div><div style="font-size:10px;color:#6B8EAB;margin-top:1px;">${netDk}dk net</div></td>
+      <td><span class="badge ${v.tip==='Paletli'?'b-pal':'b-dkm'}">${v.tip==='Paletli'?'🪵':'📦'}</span></td>
+      <td class="cond" style="font-weight:700;color:${v.damacana >= 500 ? '#003D8C' : '#6B9BCD'};font-size:13px;">${v.damacana}</td>
+      <td class="cond" style="font-weight:600;">${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'}</td>
+      <td><div class="cond" style="font-weight:700;">${v.bitis_dk ? lbl(v.bitis_dk) : '—'}</div>${molaTxt}</td>
+      <td class="hide-m">${statusTxt}</td>
+      <td class="hide-m"><div style="display:flex;align-items:center;gap:6px;"><div class="prog-o"><div class="prog-i" style="width:${pct.toFixed(1)}%;background:${progColor};"></div></div><span style="font-size:10px;color:#6B8EAB;min-width:25px;">${Math.round(pct)}%</span></div></td>
+      <td>${badge}</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap;">
+        ${v.durum === 'bekliyor' ? `<button class="btn btn-start" style="font-size:10px;padding:5px 8px;" onclick="confirmStart(${v.id})">▶ Başlat</button>` : ''}
+        ${v.durum === 'yukluyor' ? `<button class="btn btn-success" style="font-size:10px;padding:5px 8px;" onclick="confirmFinish(${v.id})">✅ Bitir</button>` : ''}
+        <button class="btn btn-edit" style="font-size:10px;padding:5px 8px;" onclick="editArac(${v.id})">✏️</button>
+        <button class="btn btn-danger" style="font-size:10px;padding:5px 8px;" onclick="confirmDelete(${v.id})">🗑</button>
+      </div></td>`;
+    tbody.appendChild(tr);
+  });
 }
 
 function renderCompleted() {
@@ -1101,160 +1086,46 @@ function renderCompleted() {
     const gross  = (c.gercek_bitis || c.bitis_dk || 0) - (c.baslangic_dk || 0);
     const mola   = breakMins(c.baslangic_dk || 0, c.gercek_bitis || c.bitis_dk || 0);
     const net    = gross - mola;
-    const rate   = net > 0 ? (c.damacana / net).toFixed(2) : '—';
-    const molaTxt = mola > 0
-      ? `<span style="font-size:11px;color:#F39C12;font-weight:600;">-${mola}dk mola</span>`
-      : `<span style="font-size:11px;color:#27AE60;">Mola yok</span>`;
+    const rate   = net > 0 ? (c.damacana / net).toFixed(1) : '—';
 
     const tr = document.createElement('tr');
     tr.className = 'r-done';
     tr.innerHTML = `
-      <td class="cond" style="color:#6B8EAB;font-size:13px;font-weight:700;">#${c.sira}</td>
-      <td>
-        <div style="font-weight:700;">${esc(c.bayi_adi)}</div>
-        <div style="font-size:11px;color:#6B8EAB;margin-top:2px;">Çıkış yapıldı ✓</div>
-      </td>
-      <td><span class="badge ${c.tip==='Paletli'?'b-pal':'b-dkm'}">${c.tip==='Paletli'?'🪵 Paletli':'📦 Döküm'}</span></td>
-      <td>
-        <div class="cond" style="font-size:18px;font-weight:800;color:#0071BC;">${c.damacana.toLocaleString('tr')}</div>
-        <div style="font-size:10.5px;color:#6B8EAB;">adet</div>
-      </td>
-      <td class="cond" style="font-weight:600;color:#3A5A78;">${c.baslangic_dk ? lbl(c.baslangic_dk) : '—'}</td>
-      <td class="cond" style="font-weight:600;color:#3A5A78;">${c.gercek_bitis ? lbl(c.gercek_bitis) : '—'}</td>
-      <td class="hide-m" style="font-weight:600;">${gross > 0 ? fmtDur(gross) + ' brüt' : '—'}</td>
-      <td class="hide-m">${molaTxt}</td>
-      <td class="hide-m" style="color:#6B8EAB;font-size:12px;">${rate} ad/dk</td>
+      <td class="cond" style="color:#6B8EAB;font-size:12px;font-weight:800;">#${c.sira}</td>
+      <td><div style="font-weight:700;">${esc(c.bayi_adi)}</div></td>
+      <td><span class="badge ${c.tip==='Paletli'?'b-pal':'b-dkm'}">${c.tip==='Paletli'?'🪵':'📦'}</span></td>
+      <td class="cond" style="font-weight:700;color:#0071BC;">${c.damacana}</td>
+      <td class="cond" style="font-weight:600;">${c.baslangic_dk ? lbl(c.baslangic_dk) : '—'}</td>
+      <td class="cond" style="font-weight:600;">${c.gercek_bitis ? lbl(c.gercek_bitis) : '—'}</td>
+      <td class="hide-m" style="font-weight:600;">${net > 0 ? fmtDur(net) : '—'}</td>
+      <td class="hide-m" style="color:#6B8EAB;font-size:11px;">${rate} ad/dk</td>
       <td><span class="badge b-done">✓ Tamamlandı</span></td>
-      <td>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <button class="btn btn-danger" style="font-size:10.5px;padding:4px 9px;" onclick="confirmDelete(${c.id})">🗑 Sil</button>
-        </div>
-      </td>`;
+      <td><button class="btn btn-danger" style="font-size:10px;padding:5px 8px;" onclick="confirmDelete(${c.id})">🗑</button></td>`;
     tbody.appendChild(tr);
   });
 }
 
-function renderActive() {
-  const tbody  = document.getElementById('tbActive');
-  tbody.innerHTML = '';
-
-  const pending = araçlar.filter(a => a.durum !== 'tamamlandi')
-    .sort((a, b) => a.sira - b.sira);
-
-  if (pending.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><svg width="40" height="40" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#B0C8DA" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="#B0C8DA" stroke-width="1.5" stroke-linecap="round"/></svg><p>Aktif araç yok. "Araç Ekle" ile yeni araç ekleyin.</p></div></td></tr>`;
-    return;
-  }
-
-  const now = nowMin();
-  let lateCount = 0;
-
-  pending.forEach(v => {
-    const started  = v.baslangic_dk !== null && now >= v.baslangic_dk;
-    const overdue  = v.bitis_dk && now > v.bitis_dk;
-    const remaining = v.bitis_dk ? v.bitis_dk - now : 0;
-    const span     = v.bitis_dk && v.baslangic_dk ? v.bitis_dk - v.baslangic_dk : 1;
-    const elapsed  = started ? Math.min(now - (v.baslangic_dk || now), span) : 0;
-    const pct      = started ? Math.min(elapsed / span * 100, 100) : 0;
-    const molaDk   = v.baslangic_dk && v.bitis_dk ? breakMins(v.baslangic_dk, v.bitis_dk) : 0;
-    const netDk    = v._netNeeded || 0;
-
-    let rowCls, badge, statusTxt, dotCls, progColor;
-
-    if (!started) {
-      rowCls = 'r-pend'; dotCls = 'd-grey'; progColor = '#B0C8DA';
-      badge = `<span class="badge b-pend">⋯ Bekleniyor</span>`;
-      statusTxt = `<span style="color:#6B8EAB;font-size:12px;">${v.baslangic_dk ? lbl(v.baslangic_dk)+"'de başlar" : '—'}</span>`;
-    } else if (overdue) {
-      lateCount++;
-      const over = Math.ceil(now - v.bitis_dk);
-      rowCls = 'r-late'; dotCls = 'd-red'; progColor = '#E74C3C';
-      badge = `<span class="badge b-late">🚨 Gecikiyor</span>`;
-      statusTxt = `<span style="color:#E74C3C;font-weight:700;">+${fmtDur(over)} aşıldı</span>`;
-      if (!alertShown[v.id]) {
-        alertShown[v.id] = true;
-        beep();
-        showToast(`${v.bayi_adi} — beklenen bitiş aşıldı! (+${fmtDur(over)})`, 'error');
-      }
-    } else {
-      rowCls = 'r-ok'; dotCls = 'd-blue'; progColor = '#0071BC';
-      badge = `<span class="badge b-ok">▶ Yükleniyor</span>`;
-      statusTxt = `<span style="color:#0071BC;font-weight:600;">${fmtDur(remaining)} kaldı</span>`;
-    }
-
-    const molaTxt = molaDk > 0
-      ? `<div style="font-size:10px;color:#F39C12;margin-top:2px;">+${molaDk}dk mola dahil</div>`
-      : '';
-
-    const tr = document.createElement('tr');
-    tr.className = rowCls;
-    tr.innerHTML = `
-      <td class="cond" style="color:#6B8EAB;font-size:13px;font-weight:700;">#${v.sira}</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="dot ${dotCls}"></span>
-          <div>
-            <div style="font-weight:700;">${esc(v.bayi_adi)}</div>
-            <div style="font-size:11px;color:#6B8EAB;margin-top:2px;">${netDk}dk net + ${EXTRA_MIN}dk kural</div>
-          </div>
-        </div>
-      </td>
-      <td><span class="badge ${v.tip==='Paletli'?'b-pal':'b-dkm'}">${v.tip==='Paletli'?'🪵 Paletli':'📦 Döküm'}</span></td>
-      <td>
-        <div class="cond" style="font-size:18px;font-weight:800;color:#0071BC;">${v.damacana.toLocaleString('tr')}</div>
-        <div style="font-size:10.5px;color:#6B8EAB;">adet</div>
-      </td>
-      <td class="cond" style="font-weight:600;color:#3A5A78;">${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'}</td>
-      <td>
-        <div class="cond" style="font-weight:700;color:#0D1E33;font-size:15px;">${v.bitis_dk ? lbl(v.bitis_dk) : '—'}</div>
-        ${molaTxt}
-      </td>
-      <td class="hide-m">${statusTxt}</td>
-      <td class="hide-m">
-        <div style="display:flex;align-items:center;gap:7px;">
-          <div class="prog-o"><div class="prog-i" style="width:${pct.toFixed(1)}%;background:${progColor};"></div></div>
-          <span style="font-size:11px;color:#6B8EAB;min-width:30px;">${Math.round(pct)}%</span>
-        </div>
-      </td>
-      <td>${badge}</td>
-      <td>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          <button class="btn btn-edit" style="font-size:10.5px;padding:4px 9px;" onclick="editArac(${v.id})">✏️ Düzenle</button>
-          ${v.durum !== 'tamamlandi' ? `<button class="btn btn-success" style="font-size:10.5px;padding:4px 9px;" onclick="confirmFinish(${v.id})">✅ Bitir</button>` : ''}
-          <button class="btn btn-danger" style="font-size:10.5px;padding:4px 9px;" onclick="confirmDelete(${v.id})">🗑 Sil</button>
-        </div>
-      </td>`;
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById('statLate').textContent = lateCount;
-  document.getElementById('statLate').style.color = lateCount > 0 ? '#E74C3C' : '#2ECC71';
-}
-
-/* ─────────────────────────────────────────
-   8. GANTT CHART (IMPROVED)
-───────────────────────────────────────── */
 function renderGantt() {
   const canvas = document.getElementById('ganttCanvas');
   const wrap   = document.getElementById('ganttWrap');
   if (!canvas) return;
 
-  const ROW_H      = 50;
-  const LABEL_W    = 200;
+  const ROW_H      = 45;
+  const LABEL_W    = 180;
   const PADDING    = 16;
-  const HEADER_H   = 36;
+  const HEADER_H   = 32;
   const allArac    = [...araçlar].sort((a, b) => a.sira - b.sira);
   const rows       = allArac.length;
 
   if (rows === 0) {
     canvas.width  = wrap.clientWidth || 800;
-    canvas.height = 80;
+    canvas.height = 100;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, 80);
-    ctx.fillStyle = '#B0C8DA';
-    ctx.font = '13px Barlow, sans-serif';
+    ctx.clearRect(0, 0, canvas.width, 100);
+    ctx.fillStyle = '#B8D4E8';
+    ctx.font = 'bold 14px Barlow';
     ctx.textAlign = 'center';
-    ctx.fillText('Gantt görünümü için araç ekleyin', canvas.width / 2, 42);
+    ctx.fillText('➕ Araç ekle →', canvas.width / 2, 50);
     return;
   }
 
@@ -1274,26 +1145,19 @@ function renderGantt() {
   const ctx    = canvas.getContext('2d');
   const chartW = canvasW - LABEL_W - PADDING * 2;
   const now    = nowMin();
-
   const tx = (min) => LABEL_W + PADDING + ((min - tMin) / tRange) * chartW;
 
-  ctx.clearRect(0, 0, canvasW, canvasH);
-
-  // Background
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, canvasW, canvasH);
-
-  // Header background
-  ctx.fillStyle = '#EBF4FB';
+  ctx.fillStyle = '#E8F4FF';
   ctx.fillRect(0, 0, canvasW, HEADER_H);
 
-  // Time axis ticks
-  ctx.font = 'bold 11px Barlow Condensed, sans-serif';
+  ctx.font = 'bold 10px Barlow Condensed';
   ctx.fillStyle = '#0D1E33';
   ctx.textAlign = 'center';
   for (let t = Math.ceil(tMin / 30) * 30; t <= tMax; t += 30) {
     const x = tx(t);
-    ctx.fillText(lbl(t), x, 24);
+    ctx.fillText(lbl(t), x, 20);
     ctx.strokeStyle = '#D6E9F5';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1302,142 +1166,99 @@ function renderGantt() {
     ctx.stroke();
   }
 
-  // Break zones
   BREAKS.forEach(b => {
     const bx = tx(b.start);
     const bw = tx(b.end) - bx;
-    ctx.fillStyle = 'rgba(243,156,18,0.1)';
+    ctx.fillStyle = 'rgba(243,156,18,0.08)';
     ctx.fillRect(bx, HEADER_H, bw, canvasH - HEADER_H - PADDING);
-    ctx.strokeStyle = 'rgba(243,156,18,0.3)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(bx, HEADER_H, bw, canvasH - HEADER_H - PADDING);
   });
 
   ganttData = [];
 
-  // Rows
   allArac.forEach((v, i) => {
     const y = HEADER_H + i * ROW_H;
-
-    // Row bg alternating
-    ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#F9FBFD';
+    ctx.fillStyle = i % 2 === 0 ? '#fff' : '#F8FBFD';
     ctx.fillRect(0, y, canvasW, ROW_H);
-
-    // Row border
-    ctx.strokeStyle = '#E0EFF8';
+    ctx.strokeStyle = '#D6E9F5';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, y + ROW_H);
     ctx.lineTo(canvasW, y + ROW_H);
     ctx.stroke();
 
-    // Label
     ctx.fillStyle = '#0D1E33';
-    ctx.font = 'bold 13px Barlow, sans-serif';
+    ctx.font = 'bold 12px Barlow';
     ctx.textAlign = 'left';
     const labelY = y + ROW_H / 2 + 3;
-    ctx.fillText('#' + v.sira + ' ' + v.bayi_adi, 12, labelY);
+    ctx.fillText('#' + v.sira + ' ' + v.bayi_adi.substring(0, 20), 10, labelY);
     ctx.fillStyle = '#6B8EAB';
-    ctx.font = '11px Barlow, sans-serif';
-    ctx.fillText('📦 ' + v.damacana.toLocaleString('tr') + ' adet', 12, labelY + 14);
+    ctx.font = '10px Barlow';
+    ctx.fillText(v.damacana + ' adet', 10, labelY + 12);
 
-    // Bar
     if (v.baslangic_dk !== null && v.bitis_dk) {
       const bx = tx(v.baslangic_dk);
       const bw = Math.max(tx(v.bitis_dk) - bx, 6);
-      const by = y + 8;
-      const bh = ROW_H - 16;
-      const br = 5;
+      const by = y + 6;
+      const bh = ROW_H - 12;
+      const br = 4;
 
-      let barColor, barAlpha;
-      if (v.durum === 'tamamlandi') {
-        barColor = '#2ECC71'; barAlpha = 0.85;
-      } else if (now > v.bitis_dk) {
-        barColor = '#E74C3C'; barAlpha = 0.85;
-      } else if (now >= v.baslangic_dk) {
-        barColor = '#0071BC'; barAlpha = 0.85;
-      } else {
-        barColor = '#B0C8DA'; barAlpha = 0.6;
-      }
+      // Renk seçimi: Durum + Damacana boyutuna göre
+      let barColor;
+      if (v.durum === 'tamamlandi') barColor = v.damacana >= 500 ? '#1A7A3A' : '#2ECC71';
+      else if (now > v.bitis_dk) barColor = v.damacana >= 500 ? '#A01F1F' : '#E74C3C';
+      else if (now >= v.baslangic_dk) barColor = v.damacana >= 500 ? '#003D8C' : '#0071BC';
+      else barColor = v.damacana >= 500 ? '#D39E16' : '#F39C12';
 
-      // Draw bar with shadow
-      ctx.globalAlpha = 0.2;
+      ctx.globalAlpha = 0.15;
       ctx.fillStyle = '#000';
-      roundRect(ctx, bx + 1, by + 2, bw, bh, br);
+      roundRect(ctx, bx + 1, by + 1, bw, bh, br);
       ctx.fill();
-      ctx.globalAlpha = barAlpha;
 
+      ctx.globalAlpha = 0.9;
       ctx.fillStyle = barColor;
       roundRect(ctx, bx, by, bw, bh, br);
       ctx.fill();
       ctx.globalAlpha = 1;
 
-      // Border
-      ctx.strokeStyle = 'rgba(0,0,0,.15)';
+      ctx.strokeStyle = 'rgba(0,0,0,.2)';
       ctx.lineWidth = 1.5;
       roundRect(ctx, bx, by, bw, bh, br);
       ctx.stroke();
 
-      // Progress overlay
-      if (v.durum !== 'tamamlandi' && now >= v.baslangic_dk) {
-        const pct = Math.min((now - v.baslangic_dk) / (v.bitis_dk - v.baslangic_dk), 1);
-        ctx.globalAlpha = 0.3;
+      if (bw > 50) {
         ctx.fillStyle = '#fff';
-        roundRect(ctx, bx + bw * pct, by, bw * (1 - pct), bh, br);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      // Time label
-      if (bw > 60) {
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 11px Barlow Condensed, sans-serif';
+        ctx.font = 'bold 9px Barlow Condensed';
         ctx.textAlign = 'center';
-        ctx.fillText(lbl(v.baslangic_dk) + ' → ' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 4);
+        ctx.fillText(lbl(v.baslangic_dk) + '–' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 3);
       }
 
-      // Store for tooltip
-      ganttData.push({
-        x: bx, y: by, w: bw, h: bh,
-        data: v, status: v.durum === 'tamamlandi' ? 'done' : (now > v.bitis_dk ? 'late' : (now >= v.baslangic_dk ? 'active' : 'pending'))
-      });
+      ganttData.push({ x: bx, y: by, w: bw, h: bh, data: v });
     }
   });
 
-  // NOW line
   if (now >= tMin && now <= tMax) {
     const nx = tx(now);
     ctx.strokeStyle = '#E74C3C';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([5, 4]);
     ctx.beginPath();
     ctx.moveTo(nx, HEADER_H);
     ctx.lineTo(nx, canvasH - PADDING);
     ctx.stroke();
     ctx.setLineDash([]);
-
-    // NOW label
-    ctx.fillStyle = '#E74C3C';
-    ctx.font = 'bold 11px Barlow Condensed, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('ŞUAN', nx, HEADER_H - 8);
   }
 
-  // Label column separator
   ctx.strokeStyle = '#0071BC';
-  ctx.lineWidth   = 2;
-  ctx.setLineDash([]);
+  ctx.lineWidth   = 2.5;
   ctx.beginPath();
   ctx.moveTo(LABEL_W, 0);
   ctx.lineTo(LABEL_W, canvasH);
   ctx.stroke();
 
-  // Mouse tracking
   canvas.onmousemove = (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-
     let found = null;
     for (const item of ganttData) {
       if (mx >= item.x && mx <= item.x + item.w && my >= item.y && my <= item.y + item.h) {
@@ -1445,41 +1266,18 @@ function renderGantt() {
         break;
       }
     }
-
     if (found) {
-      canvas.style.cursor = 'pointer';
-      const tooltip = document.getElementById('ganttTooltip');
       const v = found.data;
-      const statusTexts = {
-        done: '✅ TAMAMLANDI',
-        late: '🚨 GECİKİYOR',
-        active: '▶️ YÜKLENIYOR',
-        pending: '⋯ BEKLENIYOR'
-      };
-
-      tooltip.innerHTML = `
-        <strong style="font-size:13px;color:#29ABE2;display:block;margin-bottom:6px;">📦 ${esc(v.bayi_adi)}</strong>
-        <div style="font-size:11px;">
-          Sıra: <strong>#${v.sira}</strong><br>
-          Damacana: <strong>${v.damacana} adet</strong><br>
-          Tip: <strong>${v.tip === 'Paletli' ? '🪵 Paletli' : '📦 Döküm'}</strong><br>
-          Başlangıç: <strong>${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'}</strong><br>
-          Tahmini Bitiş: <strong>${v.bitis_dk ? lbl(v.bitis_dk) : '—'}</strong><br>
-          Durum: <strong>${statusTexts[found.status]}</strong>
-        </div>
-      `;
+      const tooltip = document.getElementById('ganttTooltip');
+      tooltip.innerHTML = `<strong>${esc(v.bayi_adi)}</strong> (${v.damacana} adet)<br>Başlangıç: ${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'} | Bitiş: ${v.bitis_dk ? lbl(v.bitis_dk) : '—'}<br>Durum: ${v.durum}`;
       tooltip.classList.add('show');
       tooltip.style.left = (found.x + found.w / 2) + 'px';
-      tooltip.style.top = (found.y - 140) + 'px';
+      tooltip.style.top = (found.y - 110) + 'px';
     } else {
-      canvas.style.cursor = 'crosshair';
       document.getElementById('ganttTooltip').classList.remove('show');
     }
   };
-
-  canvas.onmouseout = () => {
-    document.getElementById('ganttTooltip').classList.remove('show');
-  };
+  canvas.onmouseout = () => document.getElementById('ganttTooltip').classList.remove('show');
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -1494,111 +1292,93 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/* ─────────────────────────────────────────
-   9. SAAT & GÜNCELLEME
-───────────────────────────────────────── */
 function updateClock() {
   const n    = new Date();
   const hh   = String(n.getHours()).padStart(2, '0');
   const mm   = String(n.getMinutes()).padStart(2, '0');
   const ss   = String(n.getSeconds()).padStart(2, '0');
-  const days  = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
-  const months= ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const days = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
 
   document.getElementById('liveClock').textContent = `${hh}:${mm}:${ss}`;
-  document.getElementById('liveDate').textContent  =
-    `${days[n.getDay()]} ${n.getDate()} ${months[n.getMonth()]} ${n.getFullYear()}`;
+  document.getElementById('liveDate').textContent = `${days[n.getDay()]} ${n.getDate()} ${months[n.getMonth()]}`;
 }
 
 function updateTimestamp() {
   const n  = new Date();
-  const ts = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-  document.getElementById('lastUpd').textContent      = `Son güncelleme: ${ts}`;
-  document.getElementById('lastUpdFooter').textContent= `Son güncelleme: ${ts}`;
+  const ts = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('lastUpdFooter').textContent = `Son: ${ts}`;
+  document.getElementById('lastUpd').textContent = `Son: ${ts}`;
 }
 
-/* ─────────────────────────────────────────
-   10. MODAL
-───────────────────────────────────────── */
 function openModal() {
   editingId = null;
   document.getElementById('modalTitle').textContent = '➕ Yeni Araç Ekle';
   document.getElementById('addModal').classList.add('open');
   document.getElementById('f_bayi').focus();
-  resetModalForm();
-  updateModalPreview();
+  resetForm();
+  updatePreview();
 }
 
 function editArac(id) {
   const arac = araçlar.find(a => a.id === id);
   if (!arac) return;
-
   editingId = id;
-  document.getElementById('modalTitle').textContent = '✏️ Araç Düzenle';
+  document.getElementById('modalTitle').textContent = '✏️ Düzenle';
   document.getElementById('f_bayi').value = arac.bayi_adi;
   document.getElementById('f_damacana').value = arac.damacana;
   document.getElementById('f_tip').value = arac.tip;
   document.getElementById('f_gelis').value = arac.gelis_saati;
   document.getElementById('f_sira').value = arac.sira;
   document.getElementById('addModal').classList.add('open');
-  document.getElementById('f_bayi').focus();
-  updateModalPreview();
+  updatePreview();
 }
 
 function closeModal() {
   document.getElementById('addModal').classList.remove('open');
-  resetModalForm();
+  resetForm();
   editingId = null;
 }
 
-function resetModalForm() {
+function resetForm() {
   ['f_bayi','f_damacana','f_sira'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f_tip').value = 'Döküm';
   document.getElementById('f_gelis').value = '17:00';
   document.getElementById('modalPreview').style.display = 'none';
 }
 
-function updateModalPreview() {
-  const bayi    = document.getElementById('f_bayi').value.trim();
-  const damacana= parseInt(document.getElementById('f_damacana').value) || 0;
-  const tip     = document.getElementById('f_tip').value;
-  const gelis   = document.getElementById('f_gelis').value;
+function updatePreview() {
+  const bayi = document.getElementById('f_bayi').value.trim();
+  const damacana = parseInt(document.getElementById('f_damacana').value) || 0;
+  const tip = document.getElementById('f_tip').value;
+  const gelis = document.getElementById('f_gelis').value;
   const preview = document.getElementById('modalPreview');
 
   if (!bayi || !damacana) { preview.style.display = 'none'; return; }
 
-  const isPal   = tip === 'Paletli';
-  const rate    = isPal ? AVG_RATE * 2 : AVG_RATE;
-  const netMin  = Math.ceil(damacana / rate);
-  const gelisM  = timeStrToMin(gelis) || SHIFT_START;
-
-  const lastEnd = araçlar.filter(a => a.durum !== 'tamamlandi' && a.bitis_dk).map(a => a.bitis_dk);
-  const cursor  = lastEnd.length > 0 ? Math.max(...lastEnd) : gelisM;
-  const start   = Math.max(cursor, gelisM);
-  const end     = calcEnd(start, netMin) + EXTRA_MIN;
+  const isPal = tip === 'Paletli';
+  const rate = isPal ? AVG_RATE * 2 : AVG_RATE;
+  const netMin = Math.ceil(damacana / rate);
+  const gelisM = timeStrToMin(gelis) || SHIFT_START;
+  const start = gelisM;
+  const end = calcEnd(start, netMin) + EXTRA_MIN;
 
   preview.style.display = 'block';
-  preview.innerHTML = `
-    <strong style="color:#0071BC;">📊 Tahmini Plan:</strong><br>
-    ⏱️ Başlangıç: <strong>${lbl(start)}</strong> &nbsp;→&nbsp; Bitiş: <strong>${lbl(end)}</strong><br>
-    ⚙️ Net: <strong>${netMin}dk</strong> | Hız: <strong>${rate.toFixed(1)} ad/dk</strong>
-  `;
+  preview.innerHTML = `📊 Tahmini: ${lbl(start)}→${lbl(end)} | Net: ${netMin}dk | Hız: ${rate.toFixed(1)} ad/dk`;
 }
 
 async function saveArac() {
-  const btn     = document.getElementById('btnAddSave');
-  const bayi    = document.getElementById('f_bayi').value.trim();
-  const damacana= parseInt(document.getElementById('f_damacana').value);
-  const tip     = document.getElementById('f_tip').value;
-  const gelis   = document.getElementById('f_gelis').value;
-  const sira    = parseInt(document.getElementById('f_sira').value) || 0;
+  const btn = document.getElementById('btnAddSave');
+  const bayi = document.getElementById('f_bayi').value.trim();
+  const damacana = parseInt(document.getElementById('f_damacana').value);
+  const tip = document.getElementById('f_tip').value;
+  const gelis = document.getElementById('f_gelis').value;
+  const sira = parseInt(document.getElementById('f_sira').value) || 0;
 
-  if (!bayi) { showToast('Lütfen bayi adını girin.', 'error'); return; }
-  if (!damacana || damacana < 1) { showToast('Geçerli bir damacana sayısı girin.', 'error'); return; }
-  if (!gelis) { showToast('Geliş saatini girin.', 'error'); return; }
+  if (!bayi || !damacana || !gelis) { showToast('⚠️ Tüm alanları doldurun!', 'error'); return; }
 
   btn.disabled = true;
-  btn.textContent = editingId ? '⏳ Güncelleniyor…' : '⏳ Kaydediliyor…';
+  btn.textContent = '⏳ Kaydediliyor…';
 
   try {
     if (editingId) {
@@ -1608,24 +1388,36 @@ async function saveArac() {
     }
     closeModal();
   } catch(err) {
-    showToast('Kayıt hatası: ' + err.message, 'error');
+    showToast('❌ Hata: ' + err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = editingId ? '💾 Güncelle' : '💾 Kaydet';
+    btn.textContent = editingId ? '💾 Güncelle' : '💾 Kaydet';
   }
 }
 
-/* ─────────────────────────────────────────
-   11. CONFIRM DIALOG
-───────────────────────────────────────── */
-let _confirmResolve = null;
+function filterTable() {
+  searchFilter = document.getElementById('searchInput').value;
+  renderActive();
+}
 
-function showConfirm(title, msg, okLabel = 'Evet, Devam Et', okClass = 'btn-danger') {
+function exportPDF() {
+  const opt = {
+    margin: 10,
+    filename: `akdoruk-vardiya-${new Date().toISOString().split('T')[0]}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  };
+  html2pdf().set(opt).from(document.body).save();
+}
+
+let _confirmResolve = null;
+function showConfirm(title, msg, okLabel = 'Evet', okClass = 'btn-danger') {
   document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent   = msg;
+  document.getElementById('confirmMsg').textContent = msg;
   const okBtn = document.getElementById('confirmOkBtn');
   okBtn.textContent = okLabel;
-  okBtn.className   = `btn ${okClass}`;
+  okBtn.className = `btn ${okClass}`;
   document.getElementById('confirmOverlay').classList.add('open');
   return new Promise(res => { _confirmResolve = res; });
 }
@@ -1635,98 +1427,61 @@ function closeConfirm(ok) {
   if (_confirmResolve) { _confirmResolve(ok); _confirmResolve = null; }
 }
 
-async function confirmDelete(id) {
-  const ok = await showConfirm('Aracı Sil', 'Bu araç kalıcı olarak silinecek. Onaylıyor musunuz?');
-  if (ok) await deleteArac(id);
+async function confirmStart(id) {
+  const ok = await showConfirm('Yüklemeyi Başlat?', 'Araç yükleme başlangıcı şu an olarak kaydedilecek.', 'Başlat', 'btn-start');
+  if (ok) await startArac(id);
 }
 
 async function confirmFinish(id) {
-  const ok = await showConfirm(
-    'Yüklemeyi Bitir',
-    'Yükleme tamamlandı olarak işaretlenecek ve gerçek bitiş saati kaydedilecek.',
-    'Evet, Bitir', 'btn-success'
-  );
+  const ok = await showConfirm('Yüklemeyi Bitir?', 'Araç tamamlandı olarak işaretlenecek.', 'Bitir', 'btn-success');
   if (ok) await finishArac(id);
 }
 
+async function confirmDelete(id) {
+  const ok = await showConfirm('Aracı Sil?', 'Bu işlem geri alınamaz.', 'Sil', 'btn-danger');
+  if (ok) await deleteArac(id);
+}
+
 async function confirmReset() {
-  const ok = await showConfirm(
-    '⚠️ Vardiyayı Sıfırla',
-    'TÜM araç verileri veritabanından silinecek. Bu işlem GERİ ALINAMAZ!',
-    'Evet, Sıfırla', 'btn-danger'
-  );
+  const ok = await showConfirm('Vardiyayı Sıfırla?', 'TÜM veriler silinecek. GERİ ALINAMAZ!', 'Sıfırla', 'btn-danger');
   if (ok) await resetVardiya();
 }
 
-/* ─────────────────────────────────────────
-   12. TOAST
-───────────────────────────────────────── */
 function showToast(msg, type = 'info') {
   const container = document.getElementById('toastContainer');
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  const icons = { error: '⚠️', success: '✅', info: 'ℹ️' };
-  el.innerHTML = `
-    <span style="font-size:20px;">${icons[type] || 'ℹ️'}</span>
-    <div style="flex:1;">
-      <div style="font-weight:800;font-size:12.5px;color:${type==='error'?'#C0392B':type==='success'?'#1A7A3A':'#084E84'};">
-        ${type === 'error' ? 'UYARI' : type === 'success' ? 'BAŞARILI' : 'BİLGİ'}
-      </div>
-      <div style="font-size:12px;color:#6B8EAB;margin-top:2px;">${esc(msg)}</div>
-    </div>
-    <button class="toast-close" onclick="this.closest('.toast').remove()">×</button>
-  `;
+  el.innerHTML = `<div style="flex:1;">${esc(msg)}</div><button class="toast-close" onclick="this.closest('.toast').remove()">×</button>`;
   container.appendChild(el);
-  setTimeout(() => el.remove(), 7000);
+  setTimeout(() => el.remove(), 6000);
 }
 
-/* ─────────────────────────────────────────
-   13. BAĞLANTI DURUMU
-───────────────────────────────────────── */
-function setConnected(ok, errMsg = '') {
+function setConnected(ok) {
   const dot = document.getElementById('connDot');
   const lbl = document.getElementById('connLabel');
   if (ok) {
-    dot.className   = 'conn-dot connected';
-    lbl.textContent = 'Supabase Realtime bağlı • arac_takip tablosu dinleniyor';
-    lbl.style.color = 'rgba(46,204,113,.7)';
+    dot.className = 'conn-dot connected';
+    lbl.textContent = 'Supabase bağlı';
   } else {
-    dot.className   = 'conn-dot error';
-    lbl.textContent = errMsg || 'Bağlantı kesildi';
-    lbl.style.color = 'rgba(231,76,60,.8)';
+    dot.className = 'conn-dot error';
+    lbl.textContent = 'Bağlantı kesildi';
   }
 }
 
-/* ─────────────────────────────────────────
-   14. YARDIMCI
-───────────────────────────────────────── */
 function esc(str) {
   if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/* ─────────────────────────────────────────
-   15. BAŞLATMA
-───────────────────────────────────────── */
 async function init() {
   updateClock();
-  setInterval(() => {
-    updateClock();
-    araçlar = computeSchedule(araçlar);
-    renderActive();
-    renderGantt();
-    updateTimestamp();
-  }, 1000);
-
-  setInterval(() => { loadData(); }, 30000);
+  setInterval(updateClock, 1000);
+  setInterval(() => { araçlar = computeSchedule(araçlar); renderActive(); renderGantt(); updateTimestamp(); }, 1000);
+  setInterval(loadData, 30000);
 
   ['f_bayi','f_damacana','f_tip','f_gelis'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateModalPreview);
+    if (el) el.addEventListener('input', updatePreview);
   });
 
   document.getElementById('addModal').addEventListener('click', function(e) {
@@ -1735,7 +1490,7 @@ async function init() {
 
   if (!supabase_client) {
     document.getElementById('loadingOverlay').classList.add('hidden');
-    setConnected(false, 'Supabase bağlantısı kurulamadı');
+    setConnected(false);
     return;
   }
 
@@ -1743,16 +1498,14 @@ async function init() {
     await loadData();
     subscribeRealtime();
   } catch(e) {
-    console.error('init error:', e);
-    setConnected(false, e.message);
+    console.error(e);
+    setConnected(false);
   } finally {
     document.getElementById('loadingOverlay').classList.add('hidden');
   }
 }
 
-// Başlat
 init();
 </script>
-
 </body>
 </html>
