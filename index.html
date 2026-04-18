@@ -78,6 +78,7 @@
       display: flex; align-items: center; justify-content: center;
     }
     .logo-wrap svg { width: 100%; height: 100%; }
+    .logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
 
     .brand-title {
       font-family: 'Barlow Condensed', sans-serif;
@@ -179,9 +180,25 @@
       display: flex; align-items: center; justify-content: space-between;
     }
     .gantt-header h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .06em; }
-    .gantt-scroll { overflow-x: auto; }
+    .gantt-scroll { overflow-x: auto; position: relative; }
     .gantt-canvas-wrap { position: relative; }
-    canvas#ganttCanvas { display: block; }
+    canvas#ganttCanvas { display: block; cursor: crosshair; }
+    .gantt-tooltip {
+      position: absolute;
+      background: rgba(3,34,76,.95);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      z-index: 100;
+      pointer-events: none;
+      border: 1px solid rgba(41,171,226,.4);
+      box-shadow: 0 4px 12px rgba(0,0,0,.3);
+      max-width: 300px;
+      line-height: 1.6;
+      display: none;
+    }
+    .gantt-tooltip.show { display: block; }
     .gantt-legend {
       padding: 10px 20px;
       border-top: 1px solid var(--border);
@@ -310,6 +327,8 @@
     .btn-ghost:hover:not(:disabled)   { background: #EAF4FC; color: var(--blue); border-color: var(--blue); }
     .btn-amber   { background: #F39C12; color: #fff; }
     .btn-amber:hover:not(:disabled)   { background: #e67e22; }
+    .btn-edit    { background: #29ABE2; color: #fff; }
+    .btn-edit:hover:not(:disabled)    { background: #0071BC; }
 
     /* ══════════════════════════════════════════
        TOOLBAR
@@ -460,6 +479,14 @@
       flex-wrap: wrap; gap: 6px;
       margin-top: 4px; margin-bottom: 40px;
     }
+    .footer-signature {
+      font-size: 12px; color: var(--muted);
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    .footer-signature strong { color: var(--text); font-weight: 700; }
 
     /* ══════════════════════════════════════════
        RESPONSIVE
@@ -504,11 +531,11 @@
 <!-- ══ TOAST CONTAINER ══ -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- ══ MODAL: Araç Ekle ══ -->
+<!-- ══ MODAL: Araç Ekle/Düzenle ══ -->
 <div class="modal-backdrop" id="addModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>➕ Yeni Araç Ekle</h2>
+      <h2 id="modalTitle">➕ Yeni Araç Ekle</h2>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <div class="modal-body">
@@ -567,7 +594,7 @@
   <div class="hdr-inner">
     <!-- Logo + Brand -->
     <div style="display:flex;align-items:center;gap:14px;">
-      <div class="logo-wrap">
+      <div class="logo-wrap" id="logoWrap">
         <!-- SVG Placeholder Logo -->
         <svg viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="54" height="54" rx="8" fill="#03224C"></rect>
@@ -583,6 +610,7 @@
           <span>Araç Dolum &amp; Sevkiyat Takip — Vardiya 17:00–02:00</span>
           <span class="break-chip">☕ Çay: 19:00–19:15</span>
           <span class="break-chip">🍽 Yemek: 21:00–22:00</span>
+          <span class="break-chip">☕ Çay: 00:00–00:15</span>
         </div>
       </div>
     </div>
@@ -658,6 +686,7 @@
     <div class="gantt-scroll">
       <div class="gantt-canvas-wrap" id="ganttWrap">
         <canvas id="ganttCanvas" width="1438" height="80"></canvas>
+        <div class="gantt-tooltip" id="ganttTooltip"></div>
       </div>
     </div>
     <div class="gantt-legend">
@@ -742,8 +771,13 @@
 
   <!-- FOOTER NOTE -->
   <div class="footer-note">
-    <span>* Net hız mola süreleri düşülerek hesaplanmıştır (☕ 15dk + 🍽 60dk) | Paletli yükleme 2× hız | Beklenen bitiş = hesaplanan süre + 10dk kural</span>
+    <span>* Net hız mola süreleri düşülerek hesaplanmıştır (☕ 15dk + 🍽 60dk + ☕ 15dk) | Paletli yükleme 2× hız | Beklenen bitiş = hesaplanan süre + 10dk kural</span>
     <span id="lastUpdFooter">Son güncelleme: 03:08:49</span>
+  </div>
+
+  <!-- FOOTER SIGNATURE -->
+  <div class="footer-signature">
+    © Yapan: <strong>İSMAİL HAKKI GÜRKAN</strong> | AKDORUK Doğal Kaynak Suyu — Akıllı Lojistik Takip Sistemi
   </div>
 </div>
 
@@ -761,7 +795,6 @@ const SUPABASE_KEY = 'sb_publishable_vMiZJPzLxuf6jgxtut1pow_fS64b6BX';
 
 let supabase_client;
 try {
-  // supabase nesnesi CDN'den yüklendiği için burada kullanılabilir
   supabase_client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   console.log('✅ Supabase başarıyla yüklendi');
 } catch(e) {
@@ -778,6 +811,7 @@ const EXTRA_MIN   = 10;
 const BREAKS = [
   { label: '☕ Çay',  start: toMin(19,  0), end: toMin(19, 15), color: '#FFF8EC' },
   { label: '🍽 Yemek', start: toMin(21,  0), end: toMin(22,  0), color: '#FFF0E0' },
+  { label: '☕ Çay',  start: toMin(0,  0), end: toMin(0, 15), color: '#FFF8EC' },
 ];
 
 let AVG_RATE = 8.5;
@@ -885,6 +919,7 @@ function computeSchedule(araçlar) {
 ───────────────────────────────────────── */
 let araçlar = [];
 let realtime_channel = null;
+let editingId = null;
 
 async function loadData() {
   try {
@@ -933,6 +968,16 @@ async function addArac(payload) {
   const { error } = await supabase_client.from('arac_takip').insert([payload]);
   if (error) throw error;
   showToast('Araç başarıyla eklendi!', 'success');
+  await loadData();
+}
+
+async function updateArac(id, payload) {
+  const { error } = await supabase_client
+    .from('arac_takip')
+    .update(payload)
+    .eq('id', id);
+  if (error) throw error;
+  showToast('Araç başarıyla güncellendi!', 'success');
   await loadData();
 }
 
@@ -989,6 +1034,7 @@ function subscribeRealtime() {
 ───────────────────────────────────────── */
 let alertShown = {};
 let audioCtx = null;
+let ganttData = [];
 
 function beep() {
   try {
@@ -1080,7 +1126,9 @@ function renderCompleted() {
       <td class="hide-m" style="color:#6B8EAB;font-size:12px;">${rate} ad/dk</td>
       <td><span class="badge b-done">✓ Tamamlandı</span></td>
       <td>
-        <button class="btn btn-danger" style="font-size:10.5px;padding:4px 9px;" onclick="confirmDelete(${c.id})">🗑 Sil</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-danger" style="font-size:10.5px;padding:4px 9px;" onclick="confirmDelete(${c.id})">🗑 Sil</button>
+        </div>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -1171,6 +1219,7 @@ function renderActive() {
       <td>${badge}</td>
       <td>
         <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-edit" style="font-size:10.5px;padding:4px 9px;" onclick="editArac(${v.id})">✏️ Düzenle</button>
           ${v.durum !== 'tamamlandi' ? `<button class="btn btn-success" style="font-size:10.5px;padding:4px 9px;" onclick="confirmFinish(${v.id})">✅ Bitir</button>` : ''}
           <button class="btn btn-danger" style="font-size:10.5px;padding:4px 9px;" onclick="confirmDelete(${v.id})">🗑 Sil</button>
         </div>
@@ -1183,17 +1232,17 @@ function renderActive() {
 }
 
 /* ─────────────────────────────────────────
-   8. GANTT CHART (Canvas)
+   8. GANTT CHART (IMPROVED)
 ───────────────────────────────────────── */
 function renderGantt() {
   const canvas = document.getElementById('ganttCanvas');
   const wrap   = document.getElementById('ganttWrap');
   if (!canvas) return;
 
-  const ROW_H      = 44;
-  const LABEL_W    = 170;
+  const ROW_H      = 50;
+  const LABEL_W    = 200;
   const PADDING    = 16;
-  const HEADER_H   = 32;
+  const HEADER_H   = 36;
   const allArac    = [...araçlar].sort((a, b) => a.sira - b.sira);
   const rows       = allArac.length;
 
@@ -1215,7 +1264,7 @@ function renderGantt() {
   const tMax = allEnds.length   ? Math.max(...allEnds)   + 15 : SHIFT_END;
   const tRange = tMax - tMin;
 
-  const canvasW = Math.max(wrap.clientWidth || 900, LABEL_W + tRange * 4 + PADDING * 2);
+  const canvasW = Math.max(wrap.clientWidth || 900, LABEL_W + tRange * 5 + PADDING * 2);
   const canvasH = HEADER_H + rows * ROW_H + PADDING;
   canvas.width  = canvasW;
   canvas.height = canvasH;
@@ -1230,18 +1279,21 @@ function renderGantt() {
 
   ctx.clearRect(0, 0, canvasW, canvasH);
 
-  ctx.fillStyle = '#F8FBFE';
+  // Background
+  ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, canvasW, canvasH);
 
+  // Header background
   ctx.fillStyle = '#EBF4FB';
   ctx.fillRect(0, 0, canvasW, HEADER_H);
 
-  ctx.font = '10px Barlow Condensed, sans-serif';
-  ctx.fillStyle = '#6B8EAB';
+  // Time axis ticks
+  ctx.font = 'bold 11px Barlow Condensed, sans-serif';
+  ctx.fillStyle = '#0D1E33';
   ctx.textAlign = 'center';
   for (let t = Math.ceil(tMin / 30) * 30; t <= tMax; t += 30) {
     const x = tx(t);
-    ctx.fillText(lbl(t), x, 20);
+    ctx.fillText(lbl(t), x, 24);
     ctx.strokeStyle = '#D6E9F5';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1250,23 +1302,28 @@ function renderGantt() {
     ctx.stroke();
   }
 
+  // Break zones
   BREAKS.forEach(b => {
     const bx = tx(b.start);
     const bw = tx(b.end) - bx;
-    ctx.fillStyle = 'rgba(243,156,18,0.08)';
+    ctx.fillStyle = 'rgba(243,156,18,0.1)';
     ctx.fillRect(bx, HEADER_H, bw, canvasH - HEADER_H - PADDING);
-    ctx.fillStyle = 'rgba(243,156,18,0.5)';
-    ctx.font = '9px Barlow, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(b.label, bx + bw / 2, HEADER_H + 10);
+    ctx.strokeStyle = 'rgba(243,156,18,0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, HEADER_H, bw, canvasH - HEADER_H - PADDING);
   });
 
+  ganttData = [];
+
+  // Rows
   allArac.forEach((v, i) => {
     const y = HEADER_H + i * ROW_H;
 
-    ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#F5F9FC';
+    // Row bg alternating
+    ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#F9FBFD';
     ctx.fillRect(0, y, canvasW, ROW_H);
 
+    // Row border
     ctx.strokeStyle = '#E0EFF8';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1274,82 +1331,155 @@ function renderGantt() {
     ctx.lineTo(canvasW, y + ROW_H);
     ctx.stroke();
 
+    // Label
     ctx.fillStyle = '#0D1E33';
-    ctx.font = 'bold 12px Barlow, sans-serif';
+    ctx.font = 'bold 13px Barlow, sans-serif';
     ctx.textAlign = 'left';
-    const labelY = y + ROW_H / 2 + 4;
-    ctx.fillText('#' + v.sira + ' ' + v.bayi_adi, 10, labelY);
+    const labelY = y + ROW_H / 2 + 3;
+    ctx.fillText('#' + v.sira + ' ' + v.bayi_adi, 12, labelY);
     ctx.fillStyle = '#6B8EAB';
-    ctx.font = '10px Barlow, sans-serif';
-    ctx.fillText(v.damacana.toLocaleString('tr') + ' adet', 10, labelY + 13);
+    ctx.font = '11px Barlow, sans-serif';
+    ctx.fillText('📦 ' + v.damacana.toLocaleString('tr') + ' adet', 12, labelY + 14);
 
+    // Bar
     if (v.baslangic_dk !== null && v.bitis_dk) {
       const bx = tx(v.baslangic_dk);
-      const bw = Math.max(tx(v.bitis_dk) - bx, 4);
+      const bw = Math.max(tx(v.bitis_dk) - bx, 6);
       const by = y + 8;
       const bh = ROW_H - 16;
-      const br = 4;
+      const br = 5;
 
       let barColor, barAlpha;
       if (v.durum === 'tamamlandi') {
-        barColor = '#2ECC71'; barAlpha = 0.9;
+        barColor = '#2ECC71'; barAlpha = 0.85;
       } else if (now > v.bitis_dk) {
-        barColor = '#E74C3C'; barAlpha = 0.9;
+        barColor = '#E74C3C'; barAlpha = 0.85;
       } else if (now >= v.baslangic_dk) {
-        barColor = '#0071BC'; barAlpha = 0.9;
+        barColor = '#0071BC'; barAlpha = 0.85;
       } else {
-        barColor = '#B0C8DA'; barAlpha = 0.7;
+        barColor = '#B0C8DA'; barAlpha = 0.6;
       }
 
+      // Draw bar with shadow
+      ctx.globalAlpha = 0.2;
+      ctx.fillStyle = '#000';
+      roundRect(ctx, bx + 1, by + 2, bw, bh, br);
+      ctx.fill();
       ctx.globalAlpha = barAlpha;
+
       ctx.fillStyle = barColor;
       roundRect(ctx, bx, by, bw, bh, br);
       ctx.fill();
       ctx.globalAlpha = 1;
 
+      // Border
+      ctx.strokeStyle = 'rgba(0,0,0,.15)';
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, bx, by, bw, bh, br);
+      ctx.stroke();
+
+      // Progress overlay
       if (v.durum !== 'tamamlandi' && now >= v.baslangic_dk) {
         const pct = Math.min((now - v.baslangic_dk) / (v.bitis_dk - v.baslangic_dk), 1);
-        ctx.globalAlpha = 0.25;
+        ctx.globalAlpha = 0.3;
         ctx.fillStyle = '#fff';
         roundRect(ctx, bx + bw * pct, by, bw * (1 - pct), bh, br);
         ctx.fill();
         ctx.globalAlpha = 1;
       }
 
-      if (bw > 50) {
+      // Time label
+      if (bw > 60) {
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 10px Barlow Condensed, sans-serif';
+        ctx.font = 'bold 11px Barlow Condensed, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(lbl(v.baslangic_dk) + '–' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 4);
+        ctx.fillText(lbl(v.baslangic_dk) + ' → ' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 4);
       }
+
+      // Store for tooltip
+      ganttData.push({
+        x: bx, y: by, w: bw, h: bh,
+        data: v, status: v.durum === 'tamamlandi' ? 'done' : (now > v.bitis_dk ? 'late' : (now >= v.baslangic_dk ? 'active' : 'pending'))
+      });
     }
   });
 
+  // NOW line
   if (now >= tMin && now <= tMax) {
     const nx = tx(now);
     ctx.strokeStyle = '#E74C3C';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 4]);
     ctx.beginPath();
     ctx.moveTo(nx, HEADER_H);
     ctx.lineTo(nx, canvasH - PADDING);
     ctx.stroke();
     ctx.setLineDash([]);
 
+    // NOW label
     ctx.fillStyle = '#E74C3C';
-    ctx.font = 'bold 10px Barlow Condensed, sans-serif';
+    ctx.font = 'bold 11px Barlow Condensed, sans-serif';
     ctx.textAlign = 'center';
-    const nowLbl = '▼ ' + lbl(now);
-    ctx.fillText(nowLbl, nx, HEADER_H - 2);
+    ctx.fillText('ŞUAN', nx, HEADER_H - 8);
   }
 
-  ctx.strokeStyle = '#BDD8EF';
-  ctx.lineWidth   = 1.5;
+  // Label column separator
+  ctx.strokeStyle = '#0071BC';
+  ctx.lineWidth   = 2;
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(LABEL_W, 0);
   ctx.lineTo(LABEL_W, canvasH);
   ctx.stroke();
+
+  // Mouse tracking
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    let found = null;
+    for (const item of ganttData) {
+      if (mx >= item.x && mx <= item.x + item.w && my >= item.y && my <= item.y + item.h) {
+        found = item;
+        break;
+      }
+    }
+
+    if (found) {
+      canvas.style.cursor = 'pointer';
+      const tooltip = document.getElementById('ganttTooltip');
+      const v = found.data;
+      const statusTexts = {
+        done: '✅ TAMAMLANDI',
+        late: '🚨 GECİKİYOR',
+        active: '▶️ YÜKLENIYOR',
+        pending: '⋯ BEKLENIYOR'
+      };
+
+      tooltip.innerHTML = `
+        <strong style="font-size:13px;color:#29ABE2;display:block;margin-bottom:6px;">📦 ${esc(v.bayi_adi)}</strong>
+        <div style="font-size:11px;">
+          Sıra: <strong>#${v.sira}</strong><br>
+          Damacana: <strong>${v.damacana} adet</strong><br>
+          Tip: <strong>${v.tip === 'Paletli' ? '🪵 Paletli' : '📦 Döküm'}</strong><br>
+          Başlangıç: <strong>${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'}</strong><br>
+          Tahmini Bitiş: <strong>${v.bitis_dk ? lbl(v.bitis_dk) : '—'}</strong><br>
+          Durum: <strong>${statusTexts[found.status]}</strong>
+        </div>
+      `;
+      tooltip.classList.add('show');
+      tooltip.style.left = (found.x + found.w / 2) + 'px';
+      tooltip.style.top = (found.y - 140) + 'px';
+    } else {
+      canvas.style.cursor = 'crosshair';
+      document.getElementById('ganttTooltip').classList.remove('show');
+    }
+  };
+
+  canvas.onmouseout = () => {
+    document.getElementById('ganttTooltip').classList.remove('show');
+  };
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -1391,6 +1521,25 @@ function updateTimestamp() {
    10. MODAL
 ───────────────────────────────────────── */
 function openModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '➕ Yeni Araç Ekle';
+  document.getElementById('addModal').classList.add('open');
+  document.getElementById('f_bayi').focus();
+  resetModalForm();
+  updateModalPreview();
+}
+
+function editArac(id) {
+  const arac = araçlar.find(a => a.id === id);
+  if (!arac) return;
+
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '✏️ Araç Düzenle';
+  document.getElementById('f_bayi').value = arac.bayi_adi;
+  document.getElementById('f_damacana').value = arac.damacana;
+  document.getElementById('f_tip').value = arac.tip;
+  document.getElementById('f_gelis').value = arac.gelis_saati;
+  document.getElementById('f_sira').value = arac.sira;
   document.getElementById('addModal').classList.add('open');
   document.getElementById('f_bayi').focus();
   updateModalPreview();
@@ -1398,6 +1547,11 @@ function openModal() {
 
 function closeModal() {
   document.getElementById('addModal').classList.remove('open');
+  resetModalForm();
+  editingId = null;
+}
+
+function resetModalForm() {
   ['f_bayi','f_damacana','f_sira'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f_tip').value = 'Döküm';
   document.getElementById('f_gelis').value = '17:00';
@@ -1425,11 +1579,9 @@ function updateModalPreview() {
 
   preview.style.display = 'block';
   preview.innerHTML = `
-    <strong style="color:#0071BC;">Tahmini Plan:</strong><br>
-    Başlangıç: <strong>${lbl(start)}</strong> &nbsp;→&nbsp;
-    Bitiş: <strong>${lbl(end)}</strong> &nbsp;|&nbsp;
-    Net: <strong>${netMin}dk</strong> &nbsp;|&nbsp;
-    Hız: <strong>${rate.toFixed(1)} ad/dk</strong>
+    <strong style="color:#0071BC;">📊 Tahmini Plan:</strong><br>
+    ⏱️ Başlangıç: <strong>${lbl(start)}</strong> &nbsp;→&nbsp; Bitiş: <strong>${lbl(end)}</strong><br>
+    ⚙️ Net: <strong>${netMin}dk</strong> | Hız: <strong>${rate.toFixed(1)} ad/dk</strong>
   `;
 }
 
@@ -1446,16 +1598,20 @@ async function saveArac() {
   if (!gelis) { showToast('Geliş saatini girin.', 'error'); return; }
 
   btn.disabled = true;
-  btn.textContent = '⏳ Kaydediliyor…';
+  btn.textContent = editingId ? '⏳ Güncelleniyor…' : '⏳ Kaydediliyor…';
 
   try {
-    await addArac({ bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
+    if (editingId) {
+      await updateArac(editingId, { bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
+    } else {
+      await addArac({ bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
+    }
     closeModal();
   } catch(err) {
     showToast('Kayıt hatası: ' + err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '💾 Kaydet';
+    btn.innerHTML = editingId ? '💾 Güncelle' : '💾 Kaydet';
   }
 }
 
