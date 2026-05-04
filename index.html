@@ -4,11 +4,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Akdoruk — Lojistik Kontrol Paneli</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
   <style>
     :root {
       --blue-dark:  #03224C;
@@ -27,9 +25,7 @@
       --muted:      #5A7A99;
       --text:       #0D1E33;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       background: linear-gradient(135deg, var(--bg) 0%, #F0E6FF 100%);
       font-family: 'Barlow', sans-serif;
@@ -37,13 +33,10 @@
       color: var(--text);
       overflow-x: hidden;
     }
-
     .cond { font-family: 'Barlow Condensed', sans-serif; }
-
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #D6E9F5; }
     ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, var(--blue-main), var(--green)); border-radius: 3px; }
-
     .hdr {
       background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-navy) 40%, var(--blue-main) 100%);
       border-bottom: 4px solid var(--green);
@@ -62,21 +55,27 @@
       flex-wrap: wrap;
       gap: 14px;
     }
-
     .logo-wrap {
-      width: 70px; height: 70px;
-      border-radius: 14px; overflow: hidden;
-      background: #fff; padding: 4px;
+      width: 76px; height: 76px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #fff;
+      padding: 0;
       flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      border: 3px solid var(--green);
+      box-shadow: 0 0 0 5px rgba(46,204,113,0.25), 0 6px 24px rgba(0,0,0,0.35);
+      animation: logo-glow 3s ease-in-out infinite;
       display: flex; align-items: center; justify-content: center;
-      border: 2px solid var(--green);
+    }
+    @keyframes logo-glow {
+      0%,100% { box-shadow: 0 0 0 4px rgba(46,204,113,0.2), 0 6px 24px rgba(0,0,0,0.35); }
+      50%      { box-shadow: 0 0 0 8px rgba(46,204,113,0.4), 0 6px 24px rgba(0,0,0,0.35); }
     }
     .logo-wrap img {
       width: 100%; height: 100%;
-      object-fit: contain;
+      object-fit: cover;
+      border-radius: 50%;
     }
-
     .brand-title {
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 28px; font-weight: 800;
@@ -92,7 +91,6 @@
       background: rgba(255,255,255,.15); color: #fff;
       border: 1px solid rgba(255,255,255,.25); font-size: 9px; font-weight: 700;
     }
-
     .clock-display { text-align: right; }
     .clock-time {
       font-family: 'Barlow Condensed', sans-serif;
@@ -102,12 +100,12 @@
       text-shadow: 0 2px 8px rgba(0,0,0,.2);
     }
     .clock-date { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 2px; }
-
     .hdr-divider { width: 1px; height: 48px; background: rgba(255,255,255,.2); }
-
     .avg-rate-label { font-size: 9px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .1em; }
     .avg-rate-val { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--green); }
-
+    .expected-end-label { font-size: 9px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .1em; }
+    .expected-end-val { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: #FFD700; line-height: 1; }
+    .expected-end-sub { font-size: 9px; color: rgba(255,255,255,.55); margin-top: 2px; letter-spacing: .3px; }
     .conn-bar {
       background: linear-gradient(90deg, var(--blue-dark), var(--blue-navy));
       border-bottom: 2px solid var(--blue-light);
@@ -127,7 +125,6 @@
       0%,100% { box-shadow: 0 0 0 0 rgba(46,204,113,.5); }
       50% { box-shadow: 0 0 0 8px rgba(46,204,113,0); }
     }
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -161,7 +158,6 @@
     .scard-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 5px; font-weight: 700; }
     .scard-val { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; color: var(--blue-main); line-height: 1; }
     .scard-note { font-size: 10px; color: var(--muted); margin-top: 2px; }
-
     .search-bar {
       display: flex; gap: 12px;
       margin-bottom: 20px;
@@ -185,7 +181,6 @@
       box-shadow: 0 0 0 4px rgba(46,204,113,.15);
       background: #fff;
     }
-
     .gantt-section {
       background: var(--surface);
       border: 2px solid var(--border);
@@ -235,7 +230,6 @@
     }
     .gantt-legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
     .gantt-legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
-
     .sh {
       display: flex; align-items: center; gap: 10px;
       margin-bottom: 12px;
@@ -251,7 +245,6 @@
       color: var(--muted);
     }
     .sh-line { flex: 1; height: 2px; background: linear-gradient(90deg, var(--border), transparent); }
-
     .tbox {
       background: var(--surface);
       border: 2px solid var(--border);
@@ -279,7 +272,6 @@
     }
     tbody tr:last-child td { border-bottom: none; }
     tbody td:first-child { border-left: 5px solid transparent; }
-
     .r-done td { background: #F0FBF4; }
     .r-done td:first-child { border-left-color: var(--green); }
     .r-ok td { background: #E8F4FF; }
@@ -289,7 +281,6 @@
     @keyframes lf { 0%,100% { background: #FEF0EF; } 50% { background: #FDDCDA; } }
     .r-pend td { background: #F5FAFF; opacity: .8; }
     .r-pend td:first-child { border-left-color: var(--blue-light); }
-
     .badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 3px 10px; border-radius: 20px;
@@ -301,7 +292,6 @@
     .b-pend  { background: #E8F4FF; color: #2B5E99; border: 1.5px solid var(--blue-light); }
     .b-pal   { background: #FFE8CC; color: #7A3E00; border: 1.5px solid var(--orange); }
     .b-dkm   { background: #E8F4FF; color: #003D8C; border: 1.5px solid var(--blue-main); }
-
     .dot {
       display: inline-block; width: 9px; height: 9px;
       border-radius: 50%; flex-shrink: 0;
@@ -312,13 +302,11 @@
     .d-grey  { background: var(--orange); }
     @keyframes pb { 0%,100% { box-shadow: 0 0 0 0 rgba(0,113,188,.5); } 50% { box-shadow: 0 0 0 5px rgba(0,113,188,0); } }
     @keyframes pr { 0%,100% { box-shadow: 0 0 0 0 rgba(231,76,60,.5); } 50% { box-shadow: 0 0 0 6px rgba(231,76,60,0); } }
-
     .prog-o {
       background: #D6E9F5; border-radius: 999px;
       height: 6px; width: 80px; overflow: hidden; flex-shrink: 0;
     }
     .prog-i { height: 100%; border-radius: 999px; transition: width 1s ease; }
-
     .btn {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 6px 12px; border-radius: 8px;
@@ -344,13 +332,11 @@
     .btn-edit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(41,171,226,.35); }
     .btn-start   { background: linear-gradient(135deg, #6C5CE7, #5749C0); color: #fff; box-shadow: 0 4px 12px rgba(108,92,231,.25); }
     .btn-start:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(108,92,231,.35); }
-
     .toolbar {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 10px;
       margin-bottom: 18px;
     }
-
     .modal-backdrop {
       display: none;
       position: fixed; inset: 0; z-index: 1000;
@@ -419,7 +405,6 @@
       border-top: 2px solid var(--border);
       background: linear-gradient(90deg, #F8FBFF, #FFF8F0);
     }
-
     .toast-container {
       position: fixed; top: 16px; right: 16px;
       z-index: 9999;
@@ -445,14 +430,12 @@
       margin-left: auto; flex-shrink: 0;
       padding: 0;
     }
-
     .empty-state {
       text-align: center; padding: 40px 20px;
       color: var(--muted);
     }
     .empty-state svg { margin-bottom: 12px; opacity: .4; }
     .empty-state p { font-size: 13px; }
-
     .loading-overlay {
       position: fixed; inset: 0; z-index: 2000;
       background: linear-gradient(135deg, rgba(3,34,76,.9), rgba(5,57,110,.9));
@@ -471,7 +454,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-overlay.hidden { display: none; }
-
     .footer-note {
       font-size: 10px; color: var(--muted);
       display: flex; justify-content: space-between;
@@ -494,7 +476,6 @@
       color: #7A9CC6;
       font-style: italic;
     }
-
     .confirm-overlay {
       display: none;
       position: fixed; inset: 0; z-index: 1100;
@@ -513,7 +494,15 @@
     .confirm-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
     .confirm-msg { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
     .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
-
+    .sure-input {
+      width: 70px; padding: 4px 6px;
+      border: 1.5px solid var(--border); border-radius: 6px;
+      font-size: 11px; font-weight: 700;
+      font-family: 'Barlow', sans-serif;
+      color: var(--text); background: #fff;
+      text-align: center;
+    }
+    .sure-input:focus { outline: none; border-color: var(--blue-main); }
     @media (max-width: 768px) {
       thead th, tbody td { padding: 8px 6px; font-size: 11px; }
       .hide-m { display: none !important; }
@@ -524,16 +513,13 @@
   </style>
 </head>
 <body>
-
 <!-- ══ LOADING ══ -->
 <div class="loading-overlay hidden" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;letter-spacing:.05em;">VERİTABANINA BAĞLANIYOR…</div>
 </div>
-
 <!-- ══ TOAST CONTAINER ══ -->
 <div class="toast-container" id="toastContainer"></div>
-
 <!-- ══ MODAL: Araç Ekle/Düzenle ══ -->
 <div class="modal-backdrop" id="addModal">
   <div class="modal">
@@ -571,6 +557,15 @@
           <input class="form-control" id="f_sira" type="number" min="1" max="99" placeholder="otomatik">
         </div>
       </div>
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label class="form-label">⏱ Özel Yükleme Süresi (dk)</label>
+          <input class="form-control" id="f_ozel_sure" type="number" min="1" max="999" placeholder="ör. 45 (boş = otomatik)">
+        </div>
+        <div class="form-group" style="justify-content:flex-end;padding-top:22px;">
+          <small style="color:var(--muted);font-size:10px;line-height:1.4;">Boş bırakılırsa ortalama hıza göre hesaplanır.</small>
+        </div>
+      </div>
       <div class="form-row cols-2" id="f_zaman_row" style="display:none;">
         <div class="form-group">
           <label class="form-label">🕐 Başlangıç Saati</label>
@@ -589,7 +584,6 @@
     </div>
   </div>
 </div>
-
 <!-- ══ CONFIRM DIALOG ══ -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -597,11 +591,10 @@
     <div class="confirm-msg" id="confirmMsg">Bu işlem geri alınamaz.</div>
     <div class="confirm-actions">
       <button class="btn btn-ghost" onclick="closeConfirm(false)">İptal</button>
-      <button class="btn btn-danger" id="confirmOkBtn" onclick="closeConfirm(true)">Evet, Devam Et</button>
+      <button class="btn btn-danger" id="confirmOkBtn" onclick="closeConfirm(true)">Evet</button>
     </div>
   </div>
 </div>
-
 <!-- ══ HEADER ══ -->
 <header class="hdr">
   <div class="hdr-inner">
@@ -622,6 +615,13 @@
     </div>
     <!-- Right -->
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <!-- Beklenen Vardiya Bitiş -->
+      <div class="hdr-divider"></div>
+      <div style="text-align:center;">
+        <div class="expected-end-label">🏁 Beklenen Bitiş</div>
+        <div class="expected-end-val" id="expectedEnd">—</div>
+        <div class="expected-end-sub" id="expectedEndSub">araç bekleniyor</div>
+      </div>
       <div class="hdr-divider"></div>
       <div class="clock-display">
         <div class="clock-time" id="liveClock">17:00:00</div>
@@ -636,7 +636,6 @@
     </div>
   </div>
 </header>
-
 <!-- ══ CONNECTION BAR ══ -->
 <div class="conn-bar">
   <div style="display:flex;align-items:center;gap:8px;">
@@ -645,10 +644,8 @@
   </div>
   <span id="lastUpd" style="color:rgba(255,255,255,.6);font-size:9px;">Son: —</span>
 </div>
-
 <!-- ══ MAIN CONTENT ══ -->
 <div style="max-width:1500px;margin:0 auto;padding:18px 20px 0;">
-
   <!-- STATS -->
   <div class="stats-grid">
     <div class="scard">
@@ -682,7 +679,6 @@
       <div class="scard-note">zamanında</div>
     </div>
   </div>
-
   <!-- SEARCH & TOOLBAR -->
   <div class="search-bar">
     <input class="search-input" id="searchInput" type="text" placeholder="🔍 Bayi adına göre ara…" onkeyup="filterTable()">
@@ -690,16 +686,14 @@
     <button class="btn btn-amber" onclick="exportPDF()">📄 PDF İndir</button>
     <button class="btn btn-danger" onclick="confirmReset()">🔄 Sıfırla</button>
   </div>
-
   <!-- GANTT CHART -->
   <div class="gantt-section">
     <div class="gantt-header">
-      <h3>📊 Gantt Zaman Çizelgesi (Mola Hariç)</h3>
-      <span style="font-size:10px;color:#fff;opacity:.9;">Gerçek zamanlı takip</span>
+      <h3>📊 Zaman Çizelgesi — Gantt</h3>
     </div>
     <div class="gantt-scroll">
       <div style="position:relative;min-height:400px;" id="ganttWrap">
-        <canvas id="ganttCanvas" width="1438" height="400"></canvas>
+        <canvas id="ganttCanvas"></canvas>
         <div class="gantt-tooltip" id="ganttTooltip"></div>
       </div>
     </div>
@@ -711,14 +705,12 @@
       <div style="margin-left:auto;font-size:10px;font-weight:700;">▶ ŞUAN</div>
     </div>
   </div>
-
   <!-- SECTION: AKTİF & PLANLANAN -->
   <div class="sh">
     <div class="sh-dot" style="background:#6C5CE7;box-shadow:0 0 12px rgba(108,92,231,.6);"></div>
-    <span class="sh-label">Aktif & Planlanan Araçlar</span>
+    <span class="sh-label">Aktif &amp; Planlanan Araçlar</span>
     <div class="sh-line"></div>
   </div>
-
   <div class="tbox" style="margin-bottom:10px;">
     <div style="overflow-x:auto;">
       <table>
@@ -740,14 +732,12 @@
       </table>
     </div>
   </div>
-
   <!-- SECTION: TAMAMLANAN -->
   <div class="sh" id="shComp" style="display:none;">
     <div class="sh-dot" style="background:var(--green);box-shadow:0 0 12px var(--green);"></div>
     <span class="sh-label">Tamamlanan Araçlar</span>
     <div class="sh-line"></div>
   </div>
-
   <div class="tbox" id="tboxComp" style="display:none;margin-bottom:10px;">
     <div style="overflow-x:auto;">
       <table>
@@ -759,7 +749,7 @@
             <th>Damacana</th>
             <th>Başlangıç</th>
             <th>Bitiş (Gerçek)</th>
-            <th class="hide-m">Net Süre</th>
+            <th class="hide-m">Net Süre (dk)</th>
             <th class="hide-m">Hız</th>
             <th>Durum</th>
             <th>İşlem</th>
@@ -769,43 +759,36 @@
       </table>
     </div>
   </div>
-
   <!-- FOOTER -->
   <div class="footer-note">
-    <span>* Net hız: mola süresi düşülerek hesaplandı | Paletli: 2× hız | Damacana: 500+ koyu, <500 açık renkle gösterilir</span>
+    <span>* Net hız: mola süresi düşülerek hesaplandı | Paletli: 2× hız | Damacana: 500+ koyu, &lt;500 açık renkle gösterilir</span>
     <span id="lastUpdFooter">—</span>
   </div>
-
   <div class="footer-signature">
     © Yapan: <strong>İSMAİL HAKKI GÜRKAN</strong> | AKDORUK Doğal Kaynak Suyu
     <div class="design-credit">🎨 Design by İsmail Hakkı Gürkan</div>
   </div>
 </div>
-
 <!-- JAVASCRIPT -->
 <script>
 'use strict';
-
 const SUPABASE_URL = 'https://uovcmvixkwodvccchagv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_vMiZJPzLxuf6jgxtut1pow_fS64b6BX';
-
 let supabase_client;
 try {
   supabase_client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 } catch(e) {
-  console.error('Supabase error:', e);
+  console.error('Supabase init error:', e);
+  supabase_client = null;
 }
-
 const SHIFT_START = toMin(17, 0);
 const SHIFT_END   = toMin(26, 0);
 const EXTRA_MIN   = 10;
-
 const BREAKS = [
-  { label: '☕ Çay',  start: toMin(19,  0), end: toMin(19, 15), color: '#FFE8CC' },
+  { label: '☕ Çay',   start: toMin(19,  0), end: toMin(19, 15), color: '#FFE8CC' },
   { label: '🍽 Yemek', start: toMin(21,  0), end: toMin(22,  0), color: '#FFF0E0' },
-  { label: '☕ Çay',  start: toMin(0,  0), end: toMin(0, 15), color: '#FFE8CC' },
+  { label: '☕ Çay',   start: toMin(24,  0), end: toMin(24, 15), color: '#FFE8CC' },
 ];
-
 let AVG_RATE = 8.5;
 let araçlar = [];
 let editingId = null;
@@ -813,48 +796,138 @@ let ganttData = [];
 let searchFilter = '';
 
 function toMin(h, m) { return h * 60 + m; }
-
 function lbl(min) {
   let h = Math.floor(min / 60) % 24;
   if (h < 0) h += 24;
   const m = Math.round(((min % 60) + 60) % 60);
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
-
 function fmtDur(min) {
   const a = Math.abs(Math.round(min));
   const h = Math.floor(a / 60);
   const m = a % 60;
   return h > 0 ? `${h}sa ${m}dk` : `${m}dk`;
 }
-
 function nowMin() {
   const n = new Date();
   return n.getHours() * 60 + n.getMinutes() + n.getSeconds() / 60;
 }
-
-// Gece yarısını geçen saatleri vardiya bazında yorumlar (00:00–11:59 → ertesi gün)
 function nowMinShift() {
   const m = nowMin();
   return m < 12 * 60 ? m + 24 * 60 : m;
 }
 
-// Vardiya genelinde yüklenen toplam damacana sayacı (tamamlanan + aktif araç tahmini)
+// ─── ÖZEL SÜRE (localStorage) ───
+function getCustomSure(id) {
+  const v = localStorage.getItem('akdoruk_sure_' + id);
+  return v ? parseInt(v) : null;
+}
+function setCustomSure(id, min) {
+  if (min > 0) localStorage.setItem('akdoruk_sure_' + id, min);
+  else localStorage.removeItem('akdoruk_sure_' + id);
+}
+
+// ─── DİNAMİK ORTALAMA HIZ ───
+function recalcAvgRate() {
+  const done = araçlar.filter(a => a.durum === 'tamamlandi' && a.gercek_bitis && a.baslangic_dk && a.gercek_bitis > a.baslangic_dk);
+  if (done.length === 0) return;
+  let weightedSum = 0, weightCount = 0;
+  done.forEach(d => {
+    const gross = d.gercek_bitis - d.baslangic_dk;
+    const mola  = breakMins(d.baslangic_dk, d.gercek_bitis);
+    const net   = gross - mola;
+    if (net > 0 && d.damacana > 0) {
+      const rawRate        = d.damacana / net;
+      const normalizedRate = d.tip === 'Paletli' ? rawRate / 2 : rawRate;
+      weightedSum  += normalizedRate * d.damacana;
+      weightCount  += d.damacana;
+    }
+  });
+  if (weightCount > 0) {
+    const newRate = weightedSum / weightCount;
+    if (newRate > 0.5 && newRate < 50) AVG_RATE = newRate;
+  }
+}
+
+// ─── BEKLENEN BİTİŞ SAATİ ───
+function updateExpectedEnd() {
+  const el  = document.getElementById('expectedEnd');
+  const sub = document.getElementById('expectedEndSub');
+  if (!el) return;
+  const pending = araçlar.filter(a => a.durum !== 'tamamlandi' && a.bitis_dk);
+  if (pending.length === 0) {
+    const lastDone = araçlar.filter(a => a.durum === 'tamamlandi' && a.gercek_bitis);
+    if (lastDone.length > 0) {
+      el.textContent  = lbl(Math.max(...lastDone.map(a => a.gercek_bitis)));
+      if (sub) sub.textContent = '✅ tüm araçlar tamamlandı';
+    } else {
+      el.textContent = '—';
+      if (sub) sub.textContent = 'araç bekleniyor';
+    }
+    return;
+  }
+  const maxEnd = Math.max(...pending.map(a => a.bitis_dk));
+  el.textContent = lbl(maxEnd);
+  const remaining = maxEnd - nowMinShift();
+  if (sub) sub.textContent = remaining > 0 ? `son araç ~${fmtDur(remaining)} kaldı` : '⚠️ süre geçti';
+}
+
+// ─── RETROAKTİF OTOMATİK TAMAMLAMA (yalnızca "yukluyor" araçlar için) ───
+// Bekliyor araçları elle tamamlanmalı — "Tamamlandı" butonuna basılmalı
+// ─── OTOMATİK TAMAMLAMA DEVRE DIŞI ─────────────────────────────────────────
+// Araçlar yalnızca kullanıcı "✅ Bitir" veya "✅ Tamamlandı" butonuna
+// basarak tamamlanır. Hiçbir zaman otomatik olarak tamamlanmaz.
+async function autoCompleteRetroactive() {
+  return false; // devre dışı
+}
+
+// ─── YÜKLEME SÜRESİ GÜNCELLE (tamamlanan tabloda) ───
+// ─── DOĞRUDAN TAMAMLA (bekleyen araç → tamamlandı) ───
+async function directComplete(id) {
+  const arac = araçlar.find(a => a.id === id);
+  if (!arac) return;
+  const endTime   = arac._netEnd    ? Math.round(arac._netEnd)    : Math.round(nowMinShift());
+  const startTime = arac.baslangic_dk ? Math.round(arac.baslangic_dk) : Math.round(endTime - (arac._netNeeded || 30));
+  const ok = await showConfirm(
+    'Aracı Tamamlandı İşaretle?',
+    `"${arac.bayi_adi}" — Tahmini bitiş: ${lbl(endTime)} olarak kaydedilecek. Emin misiniz?`,
+    '✅ Tamamlandı', 'btn-success'
+  );
+  if (!ok) return;
+  const { error } = await supabase_client.from('arac_takip').update({
+    durum:        'tamamlandi',
+    baslangic_dk: startTime,
+    gercek_bitis: endTime
+  }).eq('id', id);
+  if (error) { showToast('❌ Hata: ' + error.message, 'error'); return; }
+  showToast('✅ Araç tamamlandı olarak işaretlendi', 'success');
+  await loadData();
+}
+
+async function updateLoadingTime(id, minutes) {
+  const arac = araçlar.find(a => a.id === id);
+  if (!arac || arac.baslangic_dk == null) { showToast('❌ Başlangıç saati bilinmiyor', 'error'); return; }
+  const minVal = parseInt(minutes);
+  if (isNaN(minVal) || minVal < 1 || minVal > 999) { showToast('❌ Geçersiz süre (1-999 dk)', 'error'); return; }
+  const newEnd = calcEnd(arac.baslangic_dk, minVal);
+  setCustomSure(id, minVal);
+  const { error } = await supabase_client.from('arac_takip').update({
+    gercek_bitis: Math.round(newEnd)
+  }).eq('id', id);
+  if (error) { showToast('❌ Kayıt hatası: ' + error.message, 'error'); return; }
+  showToast(`✅ Yükleme süresi ${minVal}dk olarak güncellendi`, 'success');
+  await loadData();
+}
+
 function updateLiveCounter() {
   const nowM = nowMinShift();
-
-  // Tamamlanan araçlar — kesin değer
   const completedDam = araçlar
     .filter(a => a.durum === 'tamamlandi')
     .reduce((s, a) => s + (a.damacana || 0), 0);
-
-  // Gerçek zamanlı vardiya hızı (henüz tamamlanan yoksa sabit AVG_RATE)
   const elapsedShift = nowM - SHIFT_START;
   const liveRate = (elapsedShift > 0 && completedDam > 0)
     ? completedDam / elapsedShift
     : AVG_RATE;
-
-  // Aktif yüklenen araçlar — geçen süreye göre tahmini dolum
   const activeDam = araçlar
     .filter(a => a.durum === 'yukluyor' && a.baslangic_dk)
     .reduce((s, a) => {
@@ -862,19 +935,16 @@ function updateLiveCounter() {
       const rate    = a.tip === 'Paletli' ? liveRate * 2 : liveRate;
       return s + Math.min(a.damacana, Math.round(elapsed * rate));
     }, 0);
-
   const total = completedDam + activeDam;
   const el    = document.getElementById('statLiveCount');
   const note  = document.getElementById('statLiveNote');
   if (!el) return;
-
   el.textContent   = total > 0 ? total.toLocaleString('tr-TR') : '—';
   note.textContent = activeDam > 0
     ? `~${completedDam.toLocaleString('tr-TR')} ✓ + ${activeDam} aktif`
     : `${completedDam.toLocaleString('tr-TR')} adet tamamlandı`;
 }
 
-// Vardiya başından şu ana kadar geçen süreye göre gerçek zamanlı dolum hızı
 function updateLiveRate() {
   const elapsed = Math.floor(nowMinShift() - SHIFT_START);
   const el      = document.getElementById('avgRate');
@@ -902,14 +972,11 @@ function timeStrToMin(str) {
   const parts = str.split(':');
   return parseInt(parts[0]) * 60 + parseInt(parts[1]);
 }
-
-// Gece 00:00-11:59 arası saatleri ertesi güne ait olarak yorumlar (vardiya 17:00-02:00)
 function timeInputToMin(str) {
   const m = timeStrToMin(str);
   if (m === null) return null;
   return m < 12 * 60 ? m + 24 * 60 : m;
 }
-
 function breakMins(s, e) {
   let t = 0;
   for (const b of BREAKS) {
@@ -919,7 +986,6 @@ function breakMins(s, e) {
   }
   return t;
 }
-
 function calcEnd(startMin, netNeeded) {
   let cursor = startMin, rem = netNeeded;
   let guard = 0;
@@ -946,38 +1012,51 @@ function calcEnd(startMin, netNeeded) {
 function computeSchedule(araçlar) {
   const sorted = [...araçlar].sort((a, b) => a.sira - b.sira);
   let cursor = SHIFT_START;
-
   sorted.forEach(v => {
+    // ─ Tamamlandı: sadece cursor'ı ilerlet, hiçbir şeyi değiştirme ─
     if (v.durum === 'tamamlandi') {
-      if (v.gercek_bitis) cursor = v.gercek_bitis + EXTRA_MIN;
-      else if (v.bitis_dk) cursor = v.bitis_dk;
+      if (v.gercek_bitis) cursor = Math.max(cursor, v.gercek_bitis + EXTRA_MIN);
+      else if (v.bitis_dk) cursor = Math.max(cursor, v.bitis_dk);
+      return;
+    }
+    const isPal = v.tip === 'Paletli';
+    const customSure = getCustomSure(v.id);
+    const netNeeded = customSure
+      ? customSure
+      : Math.ceil(v.damacana / (isPal ? AVG_RATE * 2 : AVG_RATE));
+
+    // ─ Yükleniyor: başlangıç saati DB'den geldi, DOKUNMA ─
+    if (v.durum === 'yukluyor' && v.baslangic_dk != null) {
+      const netEnd  = calcEnd(v.baslangic_dk, netNeeded);
+      const dispEnd = netEnd + EXTRA_MIN;
+      v.bitis_dk    = dispEnd;
+      v._netNeeded  = netNeeded;
+      v._netEnd     = netEnd;
+      cursor        = Math.max(cursor, dispEnd);
       return;
     }
 
+    // ─ Bekliyor: tahmini başlangıç ve bitiş hesapla ─
     const gelisMin = timeStrToMin(v.gelis_saati) || SHIFT_START;
-    const start = Math.max(cursor, gelisMin);
-    const isPal = v.tip === 'Paletli';
-    const netNeeded = Math.ceil(v.damacana / (isPal ? AVG_RATE * 2 : AVG_RATE));
-    const netEnd = calcEnd(start, netNeeded);
-    const dispEnd = netEnd + EXTRA_MIN;
-
+    const start    = Math.max(cursor, gelisMin);
+    const netEnd   = calcEnd(start, netNeeded);
+    const dispEnd  = netEnd + EXTRA_MIN;
     v.baslangic_dk = start;
     v.bitis_dk     = dispEnd;
     v._netNeeded   = netNeeded;
     v._netEnd      = netEnd;
-
-    cursor = dispEnd;
+    cursor         = dispEnd;
   });
-
   return sorted;
 }
 
 async function loadData() {
+  if (!supabase_client) return;
   try {
     const { data, error } = await supabase_client.from('arac_takip').select('*').order('sira', { ascending: true });
     if (error) throw error;
     araçlar = data || [];
-    recalcStats();
+    recalcAvgRate();
     araçlar = computeSchedule(araçlar);
     renderAll();
     setConnected(true);
@@ -985,26 +1064,6 @@ async function loadData() {
     console.error('Load error:', err);
     setConnected(false);
   }
-}
-
-function recalcStats() {
-  const done = araçlar.filter(a => a.durum === 'tamamlandi' && a.gercek_bitis && a.baslangic_dk);
-  if (done.length === 0) return;
-
-  let totalDok = 0, totalNet = 0, totalTimes = [];
-  done.forEach(d => {
-    const gross = d.gercek_bitis - d.baslangic_dk;
-    const mola  = breakMins(d.baslangic_dk, d.gercek_bitis);
-    const net   = gross - mola;
-    if (net > 0) {
-      totalDok += d.damacana;
-      totalNet += net;
-      totalTimes.push(net);
-    }
-  });
-
-  // AVG_RATE sabit kalıyor — planlamayı etkilememesi için güncellenmez
-  // statAvgTime kaldırıldı, yerini updateLiveCounter aldı
 }
 
 async function addArac(payload) {
@@ -1017,46 +1076,43 @@ async function addArac(payload) {
   showToast('✅ Araç eklendi!', 'success');
   await loadData();
 }
-
 async function updateArac(id, payload) {
   const { error } = await supabase_client.from('arac_takip').update(payload).eq('id', id);
   if (error) throw error;
   showToast('✅ Güncellendi!', 'success');
   await loadData();
 }
-
 async function finishArac(id) {
-  const now = Math.round(nowMin());
+  const now = Math.round(nowMinShift());
   await updateArac(id, { durum: 'tamamlandi', gercek_bitis: now });
 }
-
 async function startArac(id) {
-  const now = Math.round(nowMin());
+  const now = Math.round(nowMinShift());
   await updateArac(id, { durum: 'yukluyor', baslangic_dk: now });
 }
-
 async function deleteArac(id) {
+  setCustomSure(id, 0); // localStorage temizle
   const { error } = await supabase_client.from('arac_takip').delete().eq('id', id);
   if (error) throw error;
   showToast('🗑 Araç silindi.', 'info');
   await loadData();
 }
-
 async function resetVardiya() {
   const { error } = await supabase_client.from('arac_takip').delete().neq('id', 0);
   if (error) throw error;
   araçlar = [];
   AVG_RATE = 8.5;
+  localStorage.clear();
   renderAll();
   showToast('🔄 Vardiya sıfırlandı!', 'info');
   setConnected(true);
 }
-
 function subscribeRealtime() {
   if (!supabase_client) return;
-  supabase_client.channel('arac_takip_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'arac_takip' }, () => { loadData(); }).subscribe(status => { if (status === 'SUBSCRIBED') setConnected(true); });
+  supabase_client.channel('arac_takip_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'arac_takip' }, () => { loadData(); })
+    .subscribe(status => { if (status === 'SUBSCRIBED') setConnected(true); });
 }
-
 function renderAll() {
   renderStats();
   renderActive();
@@ -1065,71 +1121,67 @@ function renderAll() {
   updateTimestamp();
   updateLiveRate();
   updateLiveCounter();
+  updateExpectedEnd();
 }
-
 function renderStats() {
   const total   = araçlar.length;
   const done    = araçlar.filter(a => a.durum === 'tamamlandi').length;
   const active  = araçlar.filter(a => a.durum === 'yukluyor').length;
   const totalDk = araçlar.reduce((s, a) => s + (a.damacana || 0), 0);
-  const now     = nowMin();
+  const now     = nowMinShift();
   const late    = araçlar.filter(a => a.durum !== 'tamamlandi' && a.bitis_dk && now > a.bitis_dk).length;
   const onTime  = done > 0 ? Math.round(((done - late) / done) * 100) : 0;
-
   document.getElementById('statTotal').textContent    = total;
   document.getElementById('statDone').textContent     = done;
   document.getElementById('statActive').textContent   = active;
   document.getElementById('statDamacana').textContent = totalDk.toLocaleString('tr');
   document.getElementById('statEff').textContent      = onTime + '%';
 }
-
 function renderActive() {
   const tbody = document.getElementById('tbActive');
   tbody.innerHTML = '';
-
-  const pending = araçlar.filter(a => a.durum !== 'tamamlandi').sort((a, b) => a.sira - b.sira);
+  const pending  = araçlar.filter(a => a.durum !== 'tamamlandi').sort((a, b) => a.sira - b.sira);
   const filtered = pending.filter(a => !searchFilter || a.bayi_adi.toLowerCase().includes(searchFilter.toLowerCase()));
-
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><p>${searchFilter ? '⚠️ Sonuç yok' : '✅ Tüm araçlar tamamlandı'}</p></div></td></tr>`;
     return;
   }
-
-  const now = nowMin();
+  const now = nowMinShift();
   filtered.forEach(v => {
-    const started  = v.baslangic_dk !== null && now >= v.baslangic_dk;
-    const overdue  = v.bitis_dk && now > v.bitis_dk;
+    const started   = v.baslangic_dk !== null && now >= v.baslangic_dk;
+    const overdue   = v.bitis_dk && now > v.bitis_dk;
     const remaining = v.bitis_dk ? v.bitis_dk - now : 0;
-    const span     = v.bitis_dk && v.baslangic_dk ? v.bitis_dk - v.baslangic_dk : 1;
-    const elapsed  = started ? Math.min(now - (v.baslangic_dk || now), span) : 0;
-    const pct      = started ? Math.min(elapsed / span * 100, 100) : 0;
-    const molaDk   = v.baslangic_dk && v.bitis_dk ? breakMins(v.baslangic_dk, v.bitis_dk) : 0;
-    const netDk    = v._netNeeded || 0;
-
-    let rowCls, badge, statusTxt, dotCls, progColor;
-
+    const span      = v.bitis_dk && v.baslangic_dk ? v.bitis_dk - v.baslangic_dk : 1;
+    const elapsed   = started ? Math.min(now - (v.baslangic_dk || now), span) : 0;
+    const pct       = started ? Math.min(elapsed / span * 100, 100) : 0;
+    const molaDk    = v.baslangic_dk && v.bitis_dk ? breakMins(v.baslangic_dk, v.bitis_dk) : 0;
+    const netDk     = v._netNeeded || 0;
+    let rowCls, badge, statusTxt, progColor;
     if (v.durum === 'bekliyor') {
-      rowCls = 'r-pend'; dotCls = 'd-grey'; progColor = '#F39C12';
+      // Bekliyor araçlar asla "Gecikiyor" göstermez — sadece Bekleniyor
+      rowCls = 'r-pend'; progColor = '#F39C12';
       badge = `<span class="badge b-pend">⋯ Bekleniyor</span>`;
-      statusTxt = `<span style="color:#6B8EAB;font-size:11px;">${v.baslangic_dk ? lbl(v.baslangic_dk)+"'de" : 'Zamanı gelince'}</span>`;
+      const tahminiBaslangic = v.baslangic_dk ? lbl(v.baslangic_dk) : '—';
+      const tahminiSure      = v._netNeeded   ? v._netNeeded + 'dk'  : '—';
+      statusTxt = `<span style="color:#6B8EAB;font-size:11px;">≈${tahminiBaslangic} · ${tahminiSure}</span>`;
     } else if (overdue) {
       const over = Math.ceil(now - v.bitis_dk);
-      rowCls = 'r-late'; dotCls = 'd-red'; progColor = '#E74C3C';
+      rowCls = 'r-late'; progColor = '#E74C3C';
       badge = `<span class="badge b-late">🚨 Gecikiyor</span>`;
       statusTxt = `<span style="color:#E74C3C;font-weight:700;">+${fmtDur(over)}</span>`;
     } else {
-      rowCls = 'r-ok'; dotCls = 'd-blue'; progColor = '#0071BC';
+      rowCls = 'r-ok'; progColor = '#0071BC';
       badge = `<span class="badge b-active">▶ Yükleniyor</span>`;
       statusTxt = `<span style="color:#0071BC;font-weight:600;">${fmtDur(remaining)}</span>`;
     }
-
     const molaTxt = molaDk > 0 ? `<div style="font-size:9px;color:#F39C12;margin-top:1px;">+${molaDk}dk mola</div>` : '';
-
+    const customSure = getCustomSure(v.id);
+    const netLabel = customSure ? `${netDk}dk <span style="color:#F39C12;font-size:9px;">✎özel</span>` : `${netDk}dk net`;
     const tr = document.createElement('tr');
     tr.className = rowCls;
     tr.innerHTML = `
       <td class="cond" style="color:#6B8EAB;font-size:12px;font-weight:800;">#${v.sira}</td>
-      <td><div style="font-weight:700;font-size:12px;">${esc(v.bayi_adi)}</div><div style="font-size:10px;color:#6B8EAB;margin-top:1px;">${netDk}dk net</div></td>
+      <td><div style="font-weight:700;font-size:12px;">${esc(v.bayi_adi)}</div><div style="font-size:10px;color:#6B8EAB;margin-top:1px;">${netLabel}</div></td>
       <td><span class="badge ${v.tip==='Paletli'?'b-pal':'b-dkm'}">${v.tip==='Paletli'?'🪵':'📦'}</span></td>
       <td class="cond" style="font-weight:700;color:${v.damacana >= 500 ? '#003D8C' : '#6B9BCD'};font-size:13px;">${v.damacana}</td>
       <td class="cond" style="font-weight:600;">${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'}</td>
@@ -1139,6 +1191,7 @@ function renderActive() {
       <td>${badge}</td>
       <td><div style="display:flex;gap:4px;flex-wrap:wrap;">
         ${v.durum === 'bekliyor' ? `<button class="btn btn-start" style="font-size:10px;padding:5px 8px;" onclick="confirmStart(${v.id})">▶ Başlat</button>` : ''}
+        ${v.durum === 'bekliyor' ? `<button class="btn btn-success" style="font-size:10px;padding:5px 8px;" onclick="directComplete(${v.id})">✅ Tamamlandı</button>` : ''}
         ${v.durum === 'yukluyor' ? `<button class="btn btn-success" style="font-size:10px;padding:5px 8px;" onclick="confirmFinish(${v.id})">✅ Bitir</button>` : ''}
         <button class="btn btn-edit" style="font-size:10px;padding:5px 8px;" onclick="editArac(${v.id})">✏️</button>
         <button class="btn btn-danger" style="font-size:10px;padding:5px 8px;" onclick="confirmDelete(${v.id})">🗑</button>
@@ -1146,13 +1199,11 @@ function renderActive() {
     tbody.appendChild(tr);
   });
 }
-
 function renderCompleted() {
-  const done = araçlar.filter(a => a.durum === 'tamamlandi');
+  const done   = araçlar.filter(a => a.durum === 'tamamlandi');
   const shEl   = document.getElementById('shComp');
   const tbEl   = document.getElementById('tboxComp');
   const tbody  = document.getElementById('tbComp');
-
   if (done.length === 0) {
     shEl.style.display = 'none';
     tbEl.style.display = 'none';
@@ -1160,14 +1211,15 @@ function renderCompleted() {
   }
   shEl.style.display = 'flex';
   tbEl.style.display = 'block';
-
   tbody.innerHTML = '';
   done.forEach(c => {
-    const gross  = (c.gercek_bitis || c.bitis_dk || 0) - (c.baslangic_dk || 0);
-    const mola   = breakMins(c.baslangic_dk || 0, c.gercek_bitis || c.bitis_dk || 0);
-    const net    = gross - mola;
-    const rate   = net > 0 ? (c.damacana / net).toFixed(1) : '—';
-
+    const gross = (c.gercek_bitis || c.bitis_dk || 0) - (c.baslangic_dk || 0);
+    const mola  = breakMins(c.baslangic_dk || 0, c.gercek_bitis || c.bitis_dk || 0);
+    const net   = gross - mola;
+    const netMin = net > 0 ? Math.round(net) : 0;
+    const rate  = net > 0 ? (c.damacana / net).toFixed(1) : '—';
+    const customSure = getCustomSure(c.id);
+    const displayMin = customSure || (netMin > 0 ? netMin : '');
     const tr = document.createElement('tr');
     tr.className = 'r-done';
     tr.innerHTML = `
@@ -1177,7 +1229,15 @@ function renderCompleted() {
       <td class="cond" style="font-weight:700;color:#0071BC;">${c.damacana}</td>
       <td class="cond" style="font-weight:600;">${c.baslangic_dk ? lbl(c.baslangic_dk) : '—'}</td>
       <td class="cond" style="font-weight:600;">${c.gercek_bitis ? lbl(c.gercek_bitis) : '—'}</td>
-      <td class="hide-m" style="font-weight:600;">${net > 0 ? fmtDur(net) : '—'}</td>
+      <td class="hide-m">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <input type="number" class="sure-input" value="${displayMin}" min="1" max="999"
+            title="Net yükleme süresi (dk) — değiştirip Enter'a basın"
+            onchange="updateLoadingTime(${c.id}, this.value)"
+            onkeydown="if(event.key==='Enter')this.blur()">
+          <span style="font-size:10px;color:#6B8EAB;">dk</span>
+        </div>
+      </td>
       <td class="hide-m" style="color:#6B8EAB;font-size:11px;">${rate} ad/dk</td>
       <td><span class="badge b-done">✓ Tamamlandı</span></td>
       <td style="display:flex;gap:4px;">
@@ -1187,38 +1247,51 @@ function renderCompleted() {
     tbody.appendChild(tr);
   });
 }
-
 function renderGantt() {
   const canvas = document.getElementById('ganttCanvas');
   const wrap   = document.getElementById('ganttWrap');
   if (!canvas) return;
 
-  const ROW_H      = 45;
-  const LABEL_W    = 180;
-  const PADDING    = 16;
-  const HEADER_H   = 32;
-  const allArac    = [...araçlar].sort((a, b) => a.sira - b.sira);
-  const rows       = allArac.length;
+  const ROW_H    = 52;
+  const LABEL_W  = 190;
+  const PADDING  = 20;
+  const HEADER_H = 36;
+
+  const allArac = [...araçlar].sort((a, b) => a.sira - b.sira);
+  const rows    = allArac.length;
 
   if (rows === 0) {
     canvas.width  = wrap.clientWidth || 800;
-    canvas.height = 100;
+    canvas.height = 120;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, 100);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#EAF3FB';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#B8D4E8';
-    ctx.font = 'bold 14px Barlow';
+    ctx.font = 'bold 15px Barlow Condensed';
     ctx.textAlign = 'center';
-    ctx.fillText('➕ Araç ekle →', canvas.width / 2, 50);
+    ctx.fillText('➕ Araç eklenince grafik burada belirir', canvas.width / 2, 62);
     return;
   }
 
-  const allStarts = allArac.filter(a => a.baslangic_dk).map(a => a.baslangic_dk);
-  const allEnds   = allArac.filter(a => a.bitis_dk).map(a => a.bitis_dk);
-  const tMin = allStarts.length ? Math.min(...allStarts) - 15 : SHIFT_START;
-  const tMax = allEnds.length   ? Math.max(...allEnds)   + 15 : SHIFT_END;
-  const tRange = tMax - tMin;
+  // ── Renk paleti (bayi başına) ──
+  const PALETTE = [
+    '#E74C3C','#3498DB','#9B59B6','#F39C12',
+    '#1ABC9C','#E67E22','#8E44AD','#16A085',
+    '#2980B9','#C0392B','#27AE60','#D35400',
+    '#6C5CE7','#00B894','#FDCB6E','#A29BFE',
+  ];
+  const uniqueBayis = [...new Set(allArac.map(a => a.bayi_adi))];
+  const bayiColorMap = {};
+  uniqueBayis.forEach((b, i) => { bayiColorMap[b] = PALETTE[i % PALETTE.length]; });
 
-  const canvasW = Math.max(wrap.clientWidth || 900, LABEL_W + tRange * 5 + PADDING * 2);
+  const allStarts = allArac.filter(a => a.baslangic_dk != null).map(a => a.baslangic_dk);
+  const allEnds   = allArac.filter(a => a.bitis_dk   != null).map(a => a.bitis_dk);
+  const tMin = allStarts.length ? Math.min(...allStarts) - 20 : SHIFT_START;
+  const tMax = allEnds.length   ? Math.max(...allEnds)   + 20 : SHIFT_END;
+  const tRange = Math.max(tMax - tMin, 1);
+
+  const canvasW = Math.max((wrap.clientWidth || 900), LABEL_W + tRange * 6 + PADDING * 2);
   const canvasH = HEADER_H + rows * ROW_H + PADDING;
   canvas.width  = canvasW;
   canvas.height = canvasH;
@@ -1227,140 +1300,254 @@ function renderGantt() {
 
   const ctx    = canvas.getContext('2d');
   const chartW = canvasW - LABEL_W - PADDING * 2;
-  const now    = nowMin();
+  const now    = nowMinShift();
   const tx = (min) => LABEL_W + PADDING + ((min - tMin) / tRange) * chartW;
 
-  ctx.fillStyle = '#fff';
+  // ── Arka plan ──
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, canvasH);
+  bgGrad.addColorStop(0, '#F0F7FF');
+  bgGrad.addColorStop(1, '#F8FBFF');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, canvasW, canvasH);
-  ctx.fillStyle = '#E8F4FF';
+
+  // ── Header bandı ──
+  const hdrGrad = ctx.createLinearGradient(0, 0, canvasW, 0);
+  hdrGrad.addColorStop(0, '#03224C');
+  hdrGrad.addColorStop(1, '#05396E');
+  ctx.fillStyle = hdrGrad;
   ctx.fillRect(0, 0, canvasW, HEADER_H);
 
-  ctx.font = 'bold 10px Barlow Condensed';
-  ctx.fillStyle = '#0D1E33';
+  // ── Zaman etiketleri ──
+  ctx.font = 'bold 11px Barlow Condensed';
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
   ctx.textAlign = 'center';
   for (let t = Math.ceil(tMin / 30) * 30; t <= tMax; t += 30) {
     const x = tx(t);
-    ctx.fillText(lbl(t), x, 20);
-    ctx.strokeStyle = '#D6E9F5';
-    ctx.lineWidth = 1;
+    ctx.fillText(lbl(t), x, HEADER_H - 10);
+    // Dikey kılavuz çizgisi — çok hafif noktalı
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,113,188,0.08)';
+    ctx.lineWidth   = 1;
+    ctx.setLineDash([3, 5]);
     ctx.beginPath();
     ctx.moveTo(x, HEADER_H);
     ctx.lineTo(x, canvasH - PADDING);
     ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
   }
 
+  // ── Mola şeritleri ──
   BREAKS.forEach(b => {
     const bx = tx(b.start);
-    const bw = tx(b.end) - bx;
-    ctx.fillStyle = 'rgba(243,156,18,0.08)';
+    const bw = Math.max(tx(b.end) - bx, 2);
+    ctx.fillStyle = 'rgba(243,156,18,0.07)';
     ctx.fillRect(bx, HEADER_H, bw, canvasH - HEADER_H - PADDING);
+    // Mola etiketi
+    if (bw > 20) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(230,126,34,0.55)';
+      ctx.font      = '9px Barlow';
+      ctx.textAlign = 'center';
+      ctx.fillText('☕', bx + bw / 2, HEADER_H + 12);
+      ctx.restore();
+    }
   });
+
+  // ── Etiket sütunu ayırıcısı ──
+  ctx.strokeStyle = 'rgba(0,113,188,0.15)';
+  ctx.lineWidth   = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(LABEL_W, HEADER_H);
+  ctx.lineTo(LABEL_W, canvasH);
+  ctx.stroke();
 
   ganttData = [];
 
   allArac.forEach((v, i) => {
-    const y = HEADER_H + i * ROW_H;
-    ctx.fillStyle = i % 2 === 0 ? '#fff' : '#F8FBFD';
-    ctx.fillRect(0, y, canvasW, ROW_H);
-    ctx.strokeStyle = '#D6E9F5';
-    ctx.lineWidth = 1;
+    const rowY   = HEADER_H + i * ROW_H;
+    const baseColor = bayiColorMap[v.bayi_adi] || '#0071BC';
+
+    // Satır arka planı (alternatif hafif ton)
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.6)' : 'rgba(232,244,255,0.45)';
+    ctx.fillRect(0, rowY, canvasW, ROW_H);
+
+    // Satır alt çizgisi (çok hafif)
+    ctx.strokeStyle = 'rgba(184,212,232,0.4)';
+    ctx.lineWidth   = 0.5;
     ctx.beginPath();
-    ctx.moveTo(0, y + ROW_H);
-    ctx.lineTo(canvasW, y + ROW_H);
+    ctx.moveTo(0, rowY + ROW_H);
+    ctx.lineTo(canvasW, rowY + ROW_H);
     ctx.stroke();
 
+    // ── Etiket alanı ──
+    const labelCX = LABEL_W / 2;
+    const labelCY = rowY + ROW_H / 2;
+
+    // Renkli sol şerit
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, rowY + 6, 4, ROW_H - 12);
+
+    // Sıra numarası
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.font = 'bold 10px Barlow Condensed';
+    ctx.textAlign = 'left';
+    ctx.fillText('#' + v.sira, 10, labelCY - 6);
+
+    // Bayi adı
     ctx.fillStyle = '#0D1E33';
     ctx.font = 'bold 12px Barlow';
-    ctx.textAlign = 'left';
-    const labelY = y + ROW_H / 2 + 3;
-    ctx.fillText('#' + v.sira + ' ' + v.bayi_adi.substring(0, 20), 10, labelY);
-    ctx.fillStyle = '#6B8EAB';
+    ctx.fillText(v.bayi_adi.length > 22 ? v.bayi_adi.substring(0, 21) + '…' : v.bayi_adi, 10, labelCY + 7);
+
+    // Damacana sayısı
+    ctx.fillStyle = '#5A7A99';
     ctx.font = '10px Barlow';
-    ctx.fillText(v.damacana + ' adet', 10, labelY + 12);
+    ctx.fillText('💧 ' + v.damacana + ' ad', 10, labelCY + 19);
 
-    if (v.baslangic_dk !== null && v.bitis_dk) {
+    // ── Bar ──
+    if (v.baslangic_dk != null && v.bitis_dk) {
       const bx = tx(v.baslangic_dk);
-      const bw = Math.max(tx(v.bitis_dk) - bx, 6);
-      const by = y + 6;
-      const bh = ROW_H - 12;
-      const br = 4;
+      const bw = Math.max(tx(v.bitis_dk) - bx, 12);
+      const by = rowY + 10;
+      const bh = ROW_H - 20;
+      const br = 8;
 
-      // Renk seçimi: Durum + Damacana boyutuna göre
-      let barColor;
-      if (v.durum === 'tamamlandi') barColor = v.damacana >= 500 ? '#1A7A3A' : '#2ECC71';
-      else if (now > v.bitis_dk) barColor = v.damacana >= 500 ? '#A01F1F' : '#E74C3C';
-      else if (now >= v.baslangic_dk) barColor = v.damacana >= 500 ? '#003D8C' : '#0071BC';
-      else barColor = v.damacana >= 500 ? '#D39E16' : '#F39C12';
-
-      ctx.globalAlpha = 0.15;
-      ctx.fillStyle = '#000';
-      roundRect(ctx, bx + 1, by + 1, bw, bh, br);
-      ctx.fill();
-
-      ctx.globalAlpha = 0.9;
-      ctx.fillStyle = barColor;
-      roundRect(ctx, bx, by, bw, bh, br);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-
-      ctx.strokeStyle = 'rgba(0,0,0,.2)';
-      ctx.lineWidth = 1.5;
-      roundRect(ctx, bx, by, bw, bh, br);
-      ctx.stroke();
-
-      if (bw > 50) {
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 9px Barlow Condensed';
-        ctx.textAlign = 'center';
-        ctx.fillText(lbl(v.baslangic_dk) + '–' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 3);
+      // Durum rengine göre alfa ve fill
+      let fillColor = baseColor;
+      let alpha = 1;
+      if (v.durum === 'tamamlandi') {
+        alpha = 0.85;
+      } else if (now > v.bitis_dk) {
+        fillColor = '#E74C3C'; alpha = 0.9;
+      } else if (now < v.baslangic_dk) {
+        alpha = 0.5; // bekliyor — soluk
       }
 
-      ganttData.push({ x: bx, y: by, w: bw, h: bh, data: v });
+      // Gölge
+      ctx.save();
+      ctx.shadowColor   = fillColor + '55';
+      ctx.shadowBlur    = 8;
+      ctx.shadowOffsetY = 3;
+
+      // Gradient bar
+      const barGrad = ctx.createLinearGradient(bx, by, bx, by + bh);
+      barGrad.addColorStop(0, lighten(fillColor, 30));
+      barGrad.addColorStop(1, fillColor);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle   = barGrad;
+      roundRect(ctx, bx, by, bw, bh, br);
+      ctx.fill();
+      ctx.restore();
+
+      // Kenarlık
+      ctx.save();
+      ctx.globalAlpha   = alpha * 0.6;
+      ctx.strokeStyle   = darken(fillColor, 20);
+      ctx.lineWidth     = 1.5;
+      roundRect(ctx, bx, by, bw, bh, br);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.globalAlpha = 1;
+
+      // Zaman etiketi (bar içi)
+      if (bw > 65) {
+        ctx.fillStyle = '#fff';
+        ctx.font      = 'bold 9px Barlow Condensed';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.4)';
+        ctx.shadowBlur  = 3;
+        ctx.fillText(lbl(v.baslangic_dk) + ' → ' + lbl(v.bitis_dk), bx + bw / 2, by + bh / 2 + 3);
+        ctx.shadowBlur = 0;
+      }
+
+      // ── Damacana ikonu (başlangıç) ──
+      ctx.font      = '13px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💧', bx, by - 1);
+
+      // ── Kamyon ikonu (bitiş) ──
+      ctx.fillText('🚚', bx + bw, by - 1);
+
+      // Tamamlandı işareti
+      if (v.durum === 'tamamlandi' && bw > 30) {
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font      = 'bold 11px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✓', bx + bw / 2, by + bh / 2 + 4);
+      }
+
+      ganttData.push({ x: bx - 10, y: by - 6, w: bw + 20, h: bh + 12, data: v, color: fillColor });
     }
   });
 
+  // ── Şu an çizgisi ──
   if (now >= tMin && now <= tMax) {
     const nx = tx(now);
-    ctx.strokeStyle = '#E74C3C';
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([5, 4]);
+    ctx.save();
+    const nowGrad = ctx.createLinearGradient(nx, HEADER_H, nx, canvasH - PADDING);
+    nowGrad.addColorStop(0, '#E74C3C');
+    nowGrad.addColorStop(1, 'rgba(231,76,60,0.2)');
+    ctx.strokeStyle = nowGrad;
+    ctx.lineWidth   = 2;
+    ctx.setLineDash([6, 3]);
+    ctx.shadowColor = '#E74C3C';
+    ctx.shadowBlur  = 6;
     ctx.beginPath();
     ctx.moveTo(nx, HEADER_H);
     ctx.lineTo(nx, canvasH - PADDING);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
+    // "ŞU AN" etiketi
+    ctx.fillStyle = '#E74C3C';
+    ctx.font      = 'bold 9px Barlow Condensed';
+    ctx.textAlign = 'center';
+    ctx.fillText('▼ ŞUAN', nx, HEADER_H + 10);
   }
 
-  ctx.strokeStyle = '#0071BC';
-  ctx.lineWidth   = 2.5;
-  ctx.beginPath();
-  ctx.moveTo(LABEL_W, 0);
-  ctx.lineTo(LABEL_W, canvasH);
-  ctx.stroke();
-
+  // ── Mouse tooltip ──
   canvas.onmousemove = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const rect    = canvas.getBoundingClientRect();
+    const scaleX  = canvas.width  / rect.width;
+    const scaleY  = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left)  * scaleX;
+    const my = (e.clientY - rect.top)   * scaleY;
     let found = null;
     for (const item of ganttData) {
       if (mx >= item.x && mx <= item.x + item.w && my >= item.y && my <= item.y + item.h) {
-        found = item;
-        break;
+        found = item; break;
       }
     }
+    const tooltip = document.getElementById('ganttTooltip');
     if (found) {
       const v = found.data;
-      const tooltip = document.getElementById('ganttTooltip');
-      tooltip.innerHTML = `<strong>${esc(v.bayi_adi)}</strong> (${v.damacana} adet)<br>Başlangıç: ${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'} | Bitiş: ${v.bitis_dk ? lbl(v.bitis_dk) : '—'}<br>Durum: ${v.durum}`;
+      const net = v._netNeeded || 0;
+      tooltip.innerHTML = `<strong style="color:${found.color}">${esc(v.bayi_adi)}</strong><br>
+        💧 ${v.damacana} damacana · ${v.tip}<br>
+        ⏱ ${v.baslangic_dk ? lbl(v.baslangic_dk) : '—'} → ${v.bitis_dk ? lbl(v.bitis_dk) : '—'}<br>
+        📏 Net: ${net}dk | Durum: <strong>${v.durum}</strong>`;
       tooltip.classList.add('show');
-      tooltip.style.left = (found.x + found.w / 2) + 'px';
-      tooltip.style.top = (found.y - 110) + 'px';
+      const tipX = Math.min(found.x + found.w / 2, canvasW - 160);
+      tooltip.style.left = tipX + 'px';
+      tooltip.style.top  = Math.max(found.y - 100, 40) + 'px';
     } else {
-      document.getElementById('ganttTooltip').classList.remove('show');
+      tooltip.classList.remove('show');
     }
   };
   canvas.onmouseout = () => document.getElementById('ganttTooltip').classList.remove('show');
+}
+
+// ── Renk yardımcıları ──
+function lighten(hex, pct) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  const f = pct / 100;
+  return '#' + [Math.min(255,Math.round(r+(255-r)*f)), Math.min(255,Math.round(g+(255-g)*f)), Math.min(255,Math.round(b+(255-b)*f))].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function darken(hex, pct) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  const f = 1 - pct / 100;
+  return '#' + [Math.round(r*f), Math.round(g*f), Math.round(b*f)].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -1374,26 +1561,22 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
-
 function updateClock() {
-  const n    = new Date();
-  const hh   = String(n.getHours()).padStart(2, '0');
-  const mm   = String(n.getMinutes()).padStart(2, '0');
-  const ss   = String(n.getSeconds()).padStart(2, '0');
-  const days = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+  const n      = new Date();
+  const hh     = String(n.getHours()).padStart(2, '0');
+  const mm     = String(n.getMinutes()).padStart(2, '0');
+  const ss     = String(n.getSeconds()).padStart(2, '0');
+  const days   = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
   const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
-
   document.getElementById('liveClock').textContent = `${hh}:${mm}:${ss}`;
-  document.getElementById('liveDate').textContent = `${days[n.getDay()]} ${n.getDate()} ${months[n.getMonth()]}`;
+  document.getElementById('liveDate').textContent  = `${days[n.getDay()]} ${n.getDate()} ${months[n.getMonth()]}`;
 }
-
 function updateTimestamp() {
   const n  = new Date();
   const ts = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
   document.getElementById('lastUpdFooter').textContent = `Son: ${ts}`;
-  document.getElementById('lastUpd').textContent = `Son: ${ts}`;
+  document.getElementById('lastUpd').textContent       = `Son: ${ts}`;
 }
-
 function openModal() {
   editingId = null;
   document.getElementById('modalTitle').textContent = '➕ Yeni Araç Ekle';
@@ -1402,87 +1585,77 @@ function openModal() {
   resetForm();
   updatePreview();
 }
-
 function editArac(id) {
   const arac = araçlar.find(a => a.id === id);
   if (!arac) return;
   editingId = id;
   document.getElementById('modalTitle').textContent = '✏️ Düzenle';
-  document.getElementById('f_bayi').value = arac.bayi_adi;
-  document.getElementById('f_damacana').value = arac.damacana;
-  document.getElementById('f_tip').value = arac.tip;
-  document.getElementById('f_gelis').value = arac.gelis_saati;
-  document.getElementById('f_sira').value = arac.sira;
-
-  // Tamamlanan araçlar için başlangıç/bitiş saatlerini göster
+  document.getElementById('f_bayi').value      = arac.bayi_adi;
+  document.getElementById('f_damacana').value  = arac.damacana;
+  document.getElementById('f_tip').value       = arac.tip;
+  document.getElementById('f_gelis').value     = arac.gelis_saati;
+  document.getElementById('f_sira').value      = arac.sira;
+  const customSure = getCustomSure(id);
+  document.getElementById('f_ozel_sure').value = customSure || '';
   const zamanRow = document.getElementById('f_zaman_row');
   if (arac.durum === 'tamamlandi') {
     zamanRow.style.display = '';
     document.getElementById('f_baslangic').value = arac.baslangic_dk ? lbl(arac.baslangic_dk) : '';
-    document.getElementById('f_bitis').value    = arac.gercek_bitis  ? lbl(arac.gercek_bitis)  : '';
+    document.getElementById('f_bitis').value     = arac.gercek_bitis  ? lbl(arac.gercek_bitis)  : '';
   } else {
     zamanRow.style.display = 'none';
     document.getElementById('f_baslangic').value = '';
-    document.getElementById('f_bitis').value    = '';
+    document.getElementById('f_bitis').value     = '';
   }
-
   document.getElementById('addModal').classList.add('open');
   updatePreview();
 }
-
 function closeModal() {
   document.getElementById('addModal').classList.remove('open');
   resetForm();
   editingId = null;
 }
-
 function resetForm() {
-  ['f_bayi','f_damacana','f_sira'].forEach(id => document.getElementById(id).value = '');
+  ['f_bayi','f_damacana','f_sira','f_ozel_sure'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f_tip').value = 'Döküm';
   document.getElementById('f_gelis').value = '17:00';
   document.getElementById('f_zaman_row').style.display = 'none';
   document.getElementById('f_baslangic').value = '';
-  document.getElementById('f_bitis').value    = '';
+  document.getElementById('f_bitis').value     = '';
   document.getElementById('modalPreview').style.display = 'none';
 }
-
 function updatePreview() {
-  const bayi = document.getElementById('f_bayi').value.trim();
+  const bayi     = document.getElementById('f_bayi').value.trim();
   const damacana = parseInt(document.getElementById('f_damacana').value) || 0;
-  const tip = document.getElementById('f_tip').value;
-  const gelis = document.getElementById('f_gelis').value;
-  const preview = document.getElementById('modalPreview');
-
+  const tip      = document.getElementById('f_tip').value;
+  const gelis    = document.getElementById('f_gelis').value;
+  const ozelSure = parseInt(document.getElementById('f_ozel_sure').value) || 0;
+  const preview  = document.getElementById('modalPreview');
   if (!bayi || !damacana) { preview.style.display = 'none'; return; }
-
-  const isPal = tip === 'Paletli';
-  const rate = isPal ? AVG_RATE * 2 : AVG_RATE;
-  const netMin = Math.ceil(damacana / rate);
-  const gelisM = timeStrToMin(gelis) || SHIFT_START;
-  const start = gelisM;
-  const end = calcEnd(start, netMin) + EXTRA_MIN;
-
+  const isPal    = tip === 'Paletli';
+  const rate     = isPal ? AVG_RATE * 2 : AVG_RATE;
+  const netMin   = ozelSure || Math.ceil(damacana / rate);
+  const gelisM   = timeStrToMin(gelis) || SHIFT_START;
+  const end      = calcEnd(gelisM, netMin) + EXTRA_MIN;
   preview.style.display = 'block';
-  preview.innerHTML = `📊 Tahmini: ${lbl(start)}→${lbl(end)} | Net: ${netMin}dk | Hız: ${rate.toFixed(1)} ad/dk`;
+  preview.innerHTML = `📊 Tahmini: ${lbl(gelisM)}→${lbl(end)} | Net: ${netMin}dk${ozelSure ? ' (özel)' : ''} | Hız: ${rate.toFixed(1)} ad/dk`;
 }
-
 async function saveArac() {
-  const btn = document.getElementById('btnAddSave');
-  const bayi = document.getElementById('f_bayi').value.trim();
+  const btn      = document.getElementById('btnAddSave');
+  const bayi     = document.getElementById('f_bayi').value.trim();
   const damacana = parseInt(document.getElementById('f_damacana').value);
-  const tip = document.getElementById('f_tip').value;
-  const gelis = document.getElementById('f_gelis').value;
-  const sira = parseInt(document.getElementById('f_sira').value) || 0;
-
+  const tip      = document.getElementById('f_tip').value;
+  const gelis    = document.getElementById('f_gelis').value;
+  const sira     = parseInt(document.getElementById('f_sira').value) || 0;
+  const ozelSure = parseInt(document.getElementById('f_ozel_sure').value) || 0;
   if (!bayi || !damacana || !gelis) { showToast('⚠️ Tüm alanları doldurun!', 'error'); return; }
-
   btn.disabled = true;
   btn.textContent = '⏳ Kaydediliyor…';
-
   try {
     if (editingId) {
       const payload = { bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira };
-      // Tamamlanan araçların başlangıç/bitiş saatlerini güncelle
+      if (ozelSure > 0) setCustomSure(editingId, ozelSure);
+      else setCustomSure(editingId, 0);
       const zamanRow = document.getElementById('f_zaman_row');
       if (zamanRow.style.display !== 'none') {
         const baslangicStr = document.getElementById('f_baslangic').value;
@@ -1492,7 +1665,9 @@ async function saveArac() {
       }
       await updateArac(editingId, payload);
     } else {
-      await addArac({ bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
+      const newId = await addArac({ bayi_adi: bayi, damacana, tip, gelis_saati: gelis, sira });
+      // Eklendikten sonra localStorage'a özel süre kaydet (ID geri dönmüyorsa yeni kayıt)
+      if (ozelSure > 0 && newId) setCustomSure(newId, ozelSure);
     }
     closeModal();
   } catch(err) {
@@ -1502,12 +1677,10 @@ async function saveArac() {
     btn.textContent = editingId ? '💾 Güncelle' : '💾 Kaydet';
   }
 }
-
 function filterTable() {
   searchFilter = document.getElementById('searchInput').value;
   renderActive();
 }
-
 function exportPDF() {
   const opt = {
     margin: 10,
@@ -1518,43 +1691,36 @@ function exportPDF() {
   };
   html2pdf().set(opt).from(document.body).save();
 }
-
 let _confirmResolve = null;
 function showConfirm(title, msg, okLabel = 'Evet', okClass = 'btn-danger') {
   document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmMsg').textContent   = msg;
   const okBtn = document.getElementById('confirmOkBtn');
   okBtn.textContent = okLabel;
-  okBtn.className = `btn ${okClass}`;
+  okBtn.className   = `btn ${okClass}`;
   document.getElementById('confirmOverlay').classList.add('open');
   return new Promise(res => { _confirmResolve = res; });
 }
-
 function closeConfirm(ok) {
   document.getElementById('confirmOverlay').classList.remove('open');
   if (_confirmResolve) { _confirmResolve(ok); _confirmResolve = null; }
 }
-
 async function confirmStart(id) {
   const ok = await showConfirm('Yüklemeyi Başlat?', 'Araç yükleme başlangıcı şu an olarak kaydedilecek.', 'Başlat', 'btn-start');
   if (ok) await startArac(id);
 }
-
 async function confirmFinish(id) {
   const ok = await showConfirm('Yüklemeyi Bitir?', 'Araç tamamlandı olarak işaretlenecek.', 'Bitir', 'btn-success');
   if (ok) await finishArac(id);
 }
-
 async function confirmDelete(id) {
   const ok = await showConfirm('Aracı Sil?', 'Bu işlem geri alınamaz.', 'Sil', 'btn-danger');
   if (ok) await deleteArac(id);
 }
-
 async function confirmReset() {
   const ok = await showConfirm('Vardiyayı Sıfırla?', 'TÜM veriler silinecek. GERİ ALINAMAZ!', 'Sıfırla', 'btn-danger');
   if (ok) await resetVardiya();
 }
-
 function showToast(msg, type = 'info') {
   const container = document.getElementById('toastContainer');
   const el = document.createElement('div');
@@ -1563,35 +1729,38 @@ function showToast(msg, type = 'info') {
   container.appendChild(el);
   setTimeout(() => el.remove(), 6000);
 }
-
 function setConnected(ok) {
   const dot = document.getElementById('connDot');
   const lbl = document.getElementById('connLabel');
   if (ok) {
-    dot.className = 'conn-dot connected';
+    dot.className  = 'conn-dot connected';
     lbl.textContent = 'Supabase bağlı';
   } else {
-    dot.className = 'conn-dot error';
+    dot.className  = 'conn-dot error';
     lbl.textContent = 'Bağlantı kesildi';
   }
 }
-
 function esc(str) {
   if (!str) return '';
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
 async function init() {
   updateClock();
   setInterval(updateClock, 1000);
-  setInterval(() => { araçlar = computeSchedule(araçlar); renderActive(); renderGantt(); updateTimestamp(); updateLiveRate(); updateLiveCounter(); }, 1000);
-  setInterval(loadData, 30000);
+  setInterval(() => {
+    araçlar = computeSchedule(araçlar);
+    renderActive();
+    renderGantt();
+    updateTimestamp();
+    updateLiveRate();
+    updateLiveCounter();
+    updateExpectedEnd();
+  }, 1000);
 
-  ['f_bayi','f_damacana','f_tip','f_gelis'].forEach(id => {
+  ['f_bayi','f_damacana','f_tip','f_gelis','f_ozel_sure'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', updatePreview);
   });
-
   document.getElementById('addModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
@@ -1601,6 +1770,9 @@ async function init() {
     setConnected(false);
     return;
   }
+
+  // ── Bug fix: setInterval yalnızca Supabase başarılı olunca ──
+  setInterval(loadData, 30000);
 
   try {
     await loadData();
@@ -1612,7 +1784,6 @@ async function init() {
     document.getElementById('loadingOverlay').classList.add('hidden');
   }
 }
-
 init();
 </script>
 </body>
